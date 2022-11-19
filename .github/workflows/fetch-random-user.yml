@@ -17,4 +17,4 @@ jobs:
           url: 'https://anime-hot-take.vercel.app/api/hot-take'
       - name: Response
         run: |
-          echo Current Mean: ${{ fromJson(steps.request.outputs.response).mean }}
+          echo ${{ fromJson(steps.request.outputs.response).mean }}
