@@ -1,0 +1,17 @@
+name: Fetch Random User
+on:
+  schedule:
+    - cron:  '0 12,20 * * *'
+    
+jobs:
+  fetch_random_user:
+    name: Fetch and Update
+    runs-on: ubuntu-latest
+    steps:
+      - name: HTTP Request Action
+        uses: fjogeleit/http-request-action@v1.12.0
+        with:
+          url: 'http://anime-hot-take.vercel.app/api/hot-take'
+      - name: Response
+        run: |
+          echo Current Mean: ${{ fromJson(steps.myRequest.outputs.response).mean }}
