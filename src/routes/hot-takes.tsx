@@ -8,6 +8,7 @@ import LoadingImage from "../assets/arima-ichika-ichika.gif";
 import server$ from "solid-start/server";
 import { Mal } from "node-myanimelist";
 import { getMalClient } from "~/server/malClient";
+import { getMongoClient } from "~/server/mongodb";
 
 export default function HotTakes() {
   const getUserRPC = server$(calculateMeanDifference);
@@ -110,6 +111,11 @@ interface HotTakeResult {
   mean: number;
 }
 
+interface DBSchema {
+  _id: string;
+  score: number;
+}
+
 async function calculateMeanDifference(
   username: string
 ): Promise<Result<HotTakeResult, string>> {
@@ -139,6 +145,16 @@ async function calculateMeanDifference(
     }
 
     // Database
+    const doc: DBSchema = {
+      _id: username,
+      score,
+    };
+
+    const mongo = getMongoClient();
+    await mongo
+      .db()
+      .collection("scores")
+      .updateOne({ _id: username }, { $set: doc }, { upsert: true });
 
     // Response
 
