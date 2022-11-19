@@ -8,7 +8,6 @@ import LoadingImage from "../assets/arima-ichika-ichika.gif";
 import server$ from "solid-start/server";
 import { Mal } from "node-myanimelist";
 import { getMalClient } from "~/server/malClient";
-import axios from "axios";
 import { getDB } from "~/server/firebase";
 
 export default function HotTakes() {
@@ -141,7 +140,14 @@ async function calculateMeanDifference(
     }
 
     // Database
-
+    try {
+      await getDB(import.meta.env.VITE_FIREBASE_SERVICE_ACCOUNT)
+        .collection("scores")
+        .doc(username)
+        .set({ score });
+    } catch (e) {
+      console.error(e);
+    }
     // Response
 
     return Ok({
@@ -149,14 +155,32 @@ async function calculateMeanDifference(
       mean: 1.5,
     });
   } catch (e) {
-    if (axios.isAxiosError(e)) {
-      if (e.response?.status === 404) {
+    if (isAxiosError(e)) {
+      if ("response" in e && e.response!.status === 404) {
         return Err("Cannot find user u dum dum");
       }
-
       return Err(e.message);
     }
     console.error(e);
     return Err("Unknown error");
   }
+}
+
+interface AxiosError {
+  response?: {
+    status: number;
+  };
+  message: string;
+}
+
+function isAxiosError(e: any): e is AxiosError {
+  if ("response" in e && "status" in e.response) {
+    return true;
+  }
+
+  if ("message" in e && typeof e.message === "string") {
+    return true;
+  }
+
+  return false;
 }
