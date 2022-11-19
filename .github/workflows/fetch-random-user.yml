@@ -11,10 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: HTTP Request Action
-        id: requestStep
+        id: request
         uses: fjogeleit/http-request-action@v1.12.0
         with:
           url: 'https://anime-hot-take.vercel.app/api/hot-take'
+          method: 'GET'
       - name: Response
         run: |
-          echo ${{ steps.requestStep.outputs.response }}
+          echo Current mean: ${{ fromJson(steps.request.outputs.response).mean }}
