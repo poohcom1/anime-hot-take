@@ -1,12 +1,9 @@
 import { children, JSX } from "solid-js";
 import { css } from "solid-styled";
 
-interface ButtonProps {
-  onClick?: () => void;
-  children?: JSX.Element;
-}
-
-export default function Button(props: ButtonProps) {
+export default function Button(
+  props: JSX.ButtonHTMLAttributes<HTMLButtonElement>
+) {
   css`
     button {
       border: none;
@@ -24,6 +21,10 @@ export default function Button(props: ButtonProps) {
     button:active {
       background-color: #510839;
     }
+
+    button:disabled {
+      background-color: #2a2528;
+    }
   `;
-  return <button onclick={props.onClick}>{props.children}</button>;
+  return <button {...props}>{props.children}</button>;
 }

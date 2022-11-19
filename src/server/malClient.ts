@@ -14,7 +14,7 @@ export async function getMalClient(): Promise<Mal.MalAcount> {
     return accountCache;
   }
 
-  const auth = Mal.auth(process.env.MAL_CLIENT_ID);
+  const auth = Mal.auth();
   const account = await auth.guestLogin();
 
   accountCache = account;
