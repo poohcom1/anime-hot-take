@@ -4,14 +4,11 @@ import { css } from "solid-styled";
 import { Ok, Err } from "~/types/monads";
 import Button from "~/components/Button";
 import LoadingImage from "../assets/arima-ichika-ichika.gif";
-// Server side
 import server$ from "solid-start/server";
-import { Mal } from "node-myanimelist";
-import { getMalClient } from "~/server/malClient";
-import { getMongoClient } from "~/server/mongodb";
+import { fetchUserHotTake, HotTakeResult } from "./api/hot-take";
 
 export default function HotTakes() {
-  const getUserRPC = server$(calculateMeanDifference);
+  const fetchData = server$(fetchUserHotTake);
 
   const [loading, setLoading] = createSignal(false);
 
@@ -22,12 +19,11 @@ export default function HotTakes() {
   > | null>(null);
 
   const getHotTake = async () => {
-    setHotTake(null);
     setLoading(true);
 
-    const res = await getUserRPC(user());
-    setHotTake(res);
+    const res = await fetchData(user());
 
+    setHotTake(res);
     setLoading(false);
   };
 
@@ -92,6 +88,7 @@ export default function HotTakes() {
                 {(hotTake) => (
                   <div>
                     <h2>{hotTake.score.toFixed(1)}</h2>
+                    <div>{hotTake.mean}</div>
                   </div>
                 )}
               </Show>
@@ -101,94 +98,4 @@ export default function HotTakes() {
       </div>
     </main>
   );
-}
-
-// Server-side functions
-
-interface HotTakeResult {
-  score: number;
-
-  mean: number;
-}
-
-interface DBSchema {
-  _id: string;
-  score: number;
-}
-
-async function calculateMeanDifference(
-  username: string
-): Promise<Result<HotTakeResult, string>> {
-  try {
-    const client = await getMalClient();
-
-    const list = await client.user
-      .animelist(username, Mal.Anime.fields().mean().myListStatus(), null, {
-        limit: 50,
-        status: "completed",
-        sort: "list_score",
-      })
-      .call();
-
-    const filteredData = list.data.filter(
-      (anime) => anime.list_status.score >= 10
-    );
-
-    const score =
-      filteredData.reduce(
-        (pre, cur) => pre + Math.abs(cur.list_status.score - cur.node.mean!),
-        0
-      ) / filteredData.length;
-
-    if (isNaN(score)) {
-      return Err("You don't have any 10s 🤔, maybe you are too edgy");
-    }
-
-    // Database
-    const doc: DBSchema = {
-      _id: username,
-      score,
-    };
-
-    const mongo = getMongoClient();
-    await mongo
-      .db()
-      .collection("scores")
-      .updateOne({ _id: username }, { $set: doc }, { upsert: true });
-
-    // Response
-
-    return Ok({
-      score,
-      mean: 1.5,
-    });
-  } catch (e) {
-    if (isAxiosError(e)) {
-      if ("response" in e && e.response!.status === 404) {
-        return Err("Cannot find user u dum dum");
-      }
-      return Err(e.message);
-    }
-    console.error(e);
-    return Err("Unknown error");
-  }
-}
-
-interface AxiosError {
-  response?: {
-    status: number;
-  };
-  message: string;
-}
-
-function isAxiosError(e: any): e is AxiosError {
-  if ("response" in e && "status" in e.response) {
-    return true;
-  }
-
-  if ("message" in e && typeof e.message === "string") {
-    return true;
-  }
-
-  return false;
 }
