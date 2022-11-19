@@ -141,14 +141,7 @@ async function calculateMeanDifference(
     }
 
     // Database
-    try {
-      await getDB(import.meta.env.VITE_FIREBASE_SERVICE_ACCOUNT)
-        .collection("scores")
-        .doc(username)
-        .set({ score });
-    } catch (e) {
-      console.error(e);
-    }
+
     // Response
 
     return Ok({
