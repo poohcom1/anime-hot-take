@@ -1,7 +1,9 @@
 name: Fetch Random User
 on:
+  workflow_dispatch:
   schedule:
     - cron:  '0 12,20 * * *'
+
     
 jobs:
   fetch_random_user:
