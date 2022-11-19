@@ -8,7 +8,6 @@ import LoadingImage from "../assets/arima-ichika-ichika.gif";
 import server$ from "solid-start/server";
 import { Mal } from "node-myanimelist";
 import { getMalClient } from "~/server/malClient";
-import { getDB } from "~/server/firebase";
 
 export default function HotTakes() {
   const getUserRPC = server$(calculateMeanDifference);
@@ -139,10 +138,12 @@ async function calculateMeanDifference(
       return Err("You don't have any 10s 🤔, maybe you are too edgy");
     }
 
+    // Database
+
     // Response
 
     return Ok({
-      score: 1,
+      score,
       mean: 1.5,
     });
   } catch (e) {
