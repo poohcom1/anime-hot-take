@@ -6,6 +6,9 @@ import Button from "~/components/Button";
 import LoadingImage from "../assets/arima-ichika-ichika.gif";
 // Server side
 import server$ from "solid-start/server";
+import { Mal } from "node-myanimelist";
+import { getMalClient } from "~/server/malClient";
+import { getDB } from "~/server/firebase";
 
 export default function HotTakes() {
   const getUserRPC = server$(calculateMeanDifference);
@@ -111,10 +114,47 @@ interface HotTakeResult {
 async function calculateMeanDifference(
   username: string
 ): Promise<Result<HotTakeResult, string>> {
-  return Ok({
-    score: 1,
-    mean: 1.5,
-  });
+  try {
+    const client = await getMalClient();
+
+    const list = await client.user
+      .animelist(username, Mal.Anime.fields().mean().myListStatus(), null, {
+        limit: 50,
+        status: "completed",
+        sort: "list_score",
+      })
+      .call();
+
+    const filteredData = list.data.filter(
+      (anime) => anime.list_status.score >= 10
+    );
+
+    const score =
+      filteredData.reduce(
+        (pre, cur) => pre + Math.abs(cur.list_status.score - cur.node.mean!),
+        0
+      ) / filteredData.length;
+
+    if (isNaN(score)) {
+      return Err("You don't have any 10s 🤔, maybe you are too edgy");
+    }
+
+    // Response
+
+    return Ok({
+      score: 1,
+      mean: 1.5,
+    });
+  } catch (e) {
+    if (isAxiosError(e)) {
+      if ("response" in e && e.response!.status === 404) {
+        return Err("Cannot find user u dum dum");
+      }
+      return Err(e.message);
+    }
+    console.error(e);
+    return Err("Unknown error");
+  }
 }
 
 interface AxiosError {
