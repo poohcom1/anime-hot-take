@@ -1,7 +1,6 @@
-import { createSignal, Match, Show, Switch } from "solid-js";
+import { createSignal, Match, onMount, Show, Switch } from "solid-js";
 import { Title } from "solid-start";
 import { css } from "solid-styled";
-import { Ok, Err } from "~/types/monads";
 import Button from "~/components/Button";
 import LoadingImage from "../assets/arima-ichika-ichika.gif";
 import server$ from "solid-start/server";
@@ -47,7 +46,24 @@ export default function HotTakes() {
       margin: 16px auto;
     }
 
-    .results {
+    input {
+      background-color: transparent;
+      padding-bottom: 4px;
+      outline: 0;
+      border: none;
+      border-bottom: 1px solid grey;
+      color: white;
+      caret-color: white;
+      font-size: larger;
+      width: 320px;
+    }
+
+    input:focus {
+      border-bottom-color: white;
+      transition: border-bottom-color 0.2s;
+    }
+
+    .hot-take__results {
       margin: 16px;
       display: flex;
       justify-content: center;
@@ -55,15 +71,22 @@ export default function HotTakes() {
     }
   `;
 
+  let inputRef: HTMLInputElement | undefined;
+
+  onMount(() => {
+    inputRef?.focus();
+  });
+
   return (
     <main>
       <Title>Hot Takes</Title>
-      <h1>How hot are your takes?</h1>
+      <h1>How hot are your anime takes?</h1>
       <br />
-      <label for="usernameInput">Enter your username</label>
       <input
+        ref={inputRef}
         id="usernameInput"
         type="text"
+        placeholder="Enter your MAL username"
         value={user()}
         onKeyUp={async (e) => e.key === "Enter" && (await getHotTake())}
         onInput={(e) => setUser(e.currentTarget.value)}
@@ -71,12 +94,12 @@ export default function HotTakes() {
       <Button
         class="go-button"
         onClick={async () => await getHotTake()}
-        disabled={!user().length}
+        disabled={!user().length || loading()}
       >
         Go
       </Button>
       <br />
-      <div class="results">
+      <div class="hot-take__results">
         <Switch>
           <Match when={loading()}>
             <img src={LoadingImage} />

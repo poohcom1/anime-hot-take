@@ -7,6 +7,13 @@ import { getMongoClient } from "~/server/mongodb";
 import { Err, Ok } from "~/types/monads";
 
 // API
+
+/**
+ * Fetches the hot take data of the 'user' query parameter.
+ * If no query parameter is given, a random user will be fetched (this is slow).
+ * @param apiEvent
+ * @returns
+ */
 export async function GET(apiEvent: APIEvent) {
   const query = URL.parse(apiEvent.request.url, true).query;
 
@@ -24,8 +31,8 @@ export async function GET(apiEvent: APIEvent) {
 // Functions
 
 export interface HotTakeResult {
+  user: Mal.User.UserBase;
   score: number;
-  username: string;
 
   mean: number;
 }
@@ -35,11 +42,18 @@ interface DBSchema {
   score: number;
 }
 
+/**
+ * Fetches the user hot take data, the mean data, and updates the database
+ * @param username
+ * @returns
+ */
 export async function fetchUserHotTake(
   username: string
 ): Promise<Result<HotTakeResult, string>> {
   try {
     const client = await getMalClient();
+
+    const user = await client.user.info().call();
 
     const list = await client.user
       .animelist(username, Mal.Anime.fields().mean().myListStatus(), null, {
@@ -82,6 +96,7 @@ export async function fetchUserHotTake(
     const score = total / filteredData.length;
 
     // Database
+
     const doc: DBSchema = {
       _id: username,
       score,
@@ -89,6 +104,7 @@ export async function fetchUserHotTake(
 
     const mongo = getMongoClient();
     const collection = mongo.db().collection("scores");
+
     await collection.updateOne(
       { _id: username },
       { $set: doc },
@@ -107,7 +123,7 @@ export async function fetchUserHotTake(
     // Response
 
     return Ok({
-      username,
+      user,
       score,
       mean,
     });
