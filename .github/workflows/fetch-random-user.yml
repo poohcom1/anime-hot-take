@@ -10,13 +10,20 @@ jobs:
     name: Fetch and Update
     runs-on: ubuntu-latest
     steps:
-      - name: HTTP Request Action
+      - name: Get Random user
+        id: randomUser
+        uses: fjogeleit/http-request-action@v1.12.0
+        with:
+          url: 'https://api.jikan.moe/v4/random/users'
+          method: 'GET'
+          timeout: 20000
+      - name: Get Score
         id: request
         uses: fjogeleit/http-request-action@v1.12.0
         with:
-          url: 'https://anime-hot-take.vercel.app/api/hot-take'
+          url: 'https://anime-hot-take.vercel.app/api/hot-take?user=${{ fromJson(steps.randomUser.outputs.response).data.username }}'
           method: 'GET'
-          timeout: 30000
+          timeout: 10000
       - name: Response
         run: |
-          echo "Current mean: ${{ fromJson(steps.request.outputs.response).mean }}" >> $GITHUB_STEP_SUMMARY
+          echo "New mean: ${{ fromJson(steps.request.outputs.response).mean }}" >> $GITHUB_STEP_SUMMARY >> $GITHUB_STEP_SUMMARY
