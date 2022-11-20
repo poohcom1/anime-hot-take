@@ -4,7 +4,7 @@ import { css } from "solid-styled";
 import Button from "~/components/Button";
 import LoadingImage from "../assets/arima-ichika-ichika.gif";
 import server$ from "solid-start/server";
-import { fetchUserHotTake, HotTakeResult } from "./api/hot-take";
+import { fetchUserHotTake } from "./api/hot-take";
 
 export default function HotTakes() {
   const fetchData = server$(fetchUserHotTake);

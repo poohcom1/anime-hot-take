@@ -17,7 +17,7 @@ import { Err, Ok } from "~/types/monads";
 export async function GET(apiEvent: APIEvent) {
   const query = URL.parse(apiEvent.request.url, true).query;
 
-  let user = (query.user as string) ?? (await randomUser()).data.username;
+  const user = (query.user as string) ?? (await randomUser()).data.username;
 
   const res = await fetchUserHotTake(user);
 
@@ -29,13 +29,6 @@ export async function GET(apiEvent: APIEvent) {
 }
 
 // Functions
-
-export interface HotTakeResult {
-  user: Mal.User.UserBase;
-  score: number;
-
-  mean: number;
-}
 
 interface DBSchema {
   _id: string;
@@ -53,7 +46,9 @@ export async function fetchUserHotTake(
   try {
     const client = await getMalClient();
 
-    const user = await client.user.info().call();
+    const user: JikanUser = await Jikan4.jikanGet(
+      `${Jikan4.jikanUrl}/users/${username}`
+    );
 
     const list = await client.user
       .animelist(username, Mal.Anime.fields().mean().myListStatus(), null, {
