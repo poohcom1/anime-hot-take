@@ -1,10 +1,19 @@
-import { createSignal, Match, onMount, Show, Switch } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  Match,
+  onMount,
+  Show,
+  Switch,
+} from "solid-js";
 import { Title } from "solid-start";
 import { css } from "solid-styled";
-import Button from "~/components/Button";
-import LoadingImage from "../assets/arima-ichika-ichika.gif";
 import server$ from "solid-start/server";
+import Button from "~/components/Button";
 import { fetchUserHotTake } from "./api/hot-take";
+import HotTakeDisplay from "~/components/HotTakeDisplay";
+import LoadingImage from "~/assets/arima-ichika-ichika.gif";
+import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
 
 export default function HotTakes() {
   const fetchData = server$(fetchUserHotTake);
@@ -17,20 +26,25 @@ export default function HotTakes() {
     string
   > | null>(null);
 
-  const getHotTake = async () => {
+  async function getHotTake() {
     setLoading(true);
 
     const res = await fetchData(user());
 
-    setHotTake(res);
     setLoading(false);
-  };
+    setHotTake(res);
+  }
+
+  // Animation
+
+  const [barPercent, setBarPercent] = createSignal(0);
 
   css`
     main {
       color: white;
       background-color: #181717;
-      height: 100%;
+      min-height: 100%;
+      height: fit-content;
       font-size: large;
     }
 
@@ -55,6 +69,7 @@ export default function HotTakes() {
       color: white;
       caret-color: white;
       font-size: larger;
+      text-align: center;
       width: 320px;
     }
 
@@ -107,13 +122,17 @@ export default function HotTakes() {
           <Match when={!hotTake()}>{/* Initial */}</Match>
           <Match when={hotTake()} keyed>
             {(res) => (
-              <Show when={res.ok} fallback={<div>{res.err}</div>} keyed>
-                {(hotTake) => (
+              <Show
+                when={res.ok}
+                fallback={
                   <div>
-                    <h2>{hotTake.score.toFixed(1)}</h2>
-                    <div>{hotTake.mean}</div>
+                    <h3>{res.err}</h3>
+                    <img src={NotFoundImage} height="300px" />
                   </div>
-                )}
+                }
+                keyed
+              >
+                {(hotTake) => <HotTakeDisplay hotTake={hotTake} />}
               </Show>
             )}
           </Match>
