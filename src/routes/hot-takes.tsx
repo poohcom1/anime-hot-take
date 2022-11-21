@@ -12,6 +12,7 @@ import server$ from "solid-start/server";
 import Button from "~/components/Button";
 import { fetchUserHotTake } from "./api/hot-take";
 import HotTakeDisplay from "~/components/HotTakeDisplay";
+import ThinkingImage from "~/assets/thinking.png";
 import LoadingImage from "~/assets/arima-ichika-ichika.gif";
 import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
 
@@ -24,8 +25,19 @@ export default function HotTakes() {
   const [loading, setLoading] = createSignal(false);
   const [hotTake, setHotTake] = createSignal<HotTakeSignal>();
 
+  let displayRef: HTMLDivElement | undefined;
+  let loadingRef: HTMLDivElement | undefined;
+
   async function getHotTake() {
     setLoading(true);
+
+    setTimeout(
+      () =>
+        loadingRef?.scrollIntoView({
+          behavior: "smooth",
+        }),
+      100
+    );
 
     const res = await fetchData(user());
 
@@ -34,14 +46,18 @@ export default function HotTakes() {
 
     setTimeout(
       () =>
-        window.scrollTo({
-          left: 0,
-          top: document.body.scrollHeight,
+        displayRef?.scrollIntoView({
           behavior: "smooth",
         }),
       500
     );
   }
+
+  let inputRef: HTMLInputElement | undefined;
+
+  onMount(() => {
+    inputRef?.focus();
+  });
 
   css`
     @global {
@@ -60,7 +76,7 @@ export default function HotTakes() {
 
     h1 {
       display: inline-block;
-      color: #da1b9b;
+      color: #f654c0;
     }
 
     button,
@@ -96,16 +112,14 @@ export default function HotTakes() {
     }
   `;
 
-  let inputRef: HTMLInputElement | undefined;
-
-  onMount(() => {
-    inputRef?.focus();
-  });
-
   return (
     <main>
       <Title>Hot Takes</Title>
-      <h1>How hot are your anime takes?</h1>
+      <h1>
+        How hot are your anime takes?
+        <img src={ThinkingImage} height="70px" style="margin-left: 32px" />
+      </h1>
+
       <br />
       <input
         ref={inputRef}
@@ -127,7 +141,7 @@ export default function HotTakes() {
       <div class="hot-take__results">
         <Switch>
           <Match when={loading()}>
-            <img src={LoadingImage} />
+            <img ref={loadingRef} src={LoadingImage} />
           </Match>
           <Match when={!hotTake()}>{/* Initial */}</Match>
           <Match when={hotTake()} keyed>
@@ -142,7 +156,9 @@ export default function HotTakes() {
                 }
                 keyed
               >
-                {(hotTake) => <HotTakeDisplay hotTake={hotTake} />}
+                {(hotTake) => (
+                  <HotTakeDisplay ref={displayRef} hotTake={hotTake} />
+                )}
               </Show>
             )}
           </Match>

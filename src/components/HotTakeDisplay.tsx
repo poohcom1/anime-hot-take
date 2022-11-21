@@ -92,15 +92,43 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
       align-items: center;
       justify-content: center;
       margin: 32px;
+      margin-top: 0;
     }
 
     .flex {
       display: flex;
     }
 
+    .user-info {
+      width: 50vw;
+    }
+
     .user-img {
       margin-left: auto;
       justify-self: end;
+    }
+
+    .separator {
+      margin: 0 32px;
+    }
+
+    .center-text {
+      text-align: center;
+    }
+
+    @media only screen and (max-width: 1000px) {
+      .container {
+        display: block;
+        margin: 0;
+      }
+
+      .user-img {
+        display: none;
+      }
+
+      .separator {
+        margin: 0;
+      }
     }
   `;
 
@@ -108,7 +136,7 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
     <div id={props.id} ref={props.ref}>
       <div class="container">
         <div>
-          <div class="flex">
+          <div class="flex user-info">
             <div>
               <Delay delayMs={200}>
                 <h3>{props.hotTake.userData.user.username}'s rank:</h3>
@@ -135,18 +163,21 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
           </Delay>
         </div>
         <div class="separator" />
-        <div style="margin-left: 64px">
+        <div>
           <Delay delayMs={1000}>
             <div>
               <h2>Hottest take:</h2>
               <img src={props.hotTake.userData.topAnime.image} height="400px" />
+              <h4>{props.hotTake.userData.topAnime.title}</h4>
               <div class="hottest-anime">
                 <div>
-                  <h3>Average score</h3>
+                  <h3 class="center-text">Average score</h3>
                   <h4>{props.hotTake.userData.topAnime.rating}</h4>
                 </div>
                 <div>
-                  <h3>{props.hotTake.userData.user.username}'s Score</h3>
+                  <h3 class="center-text">
+                    {props.hotTake.userData.user.username}'s Score
+                  </h3>
                   <h4>{props.hotTake.userData.topAnime.userScore}</h4>
                 </div>
               </div>

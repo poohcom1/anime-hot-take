@@ -57,6 +57,12 @@ function GlobalStyles() {
         line-height: 1.35;
       }
 
+      @media only screen and (max-width: 1000px) {
+        h1 {
+          font-size: 3rem;
+        }
+      }
+
       @media (min-width: 480px) {
         h1 {
           max-width: none;
