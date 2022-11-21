@@ -2,6 +2,7 @@ import { APIEvent, json, ResponseError } from "solid-start";
 import URL from "url";
 import axios from "axios";
 import { Jikan4, Mal } from "node-myanimelist";
+import { standardDeviation, mean as average } from "simple-statistics";
 import { getMalClient } from "~/server/malClient";
 import { getMongoClient } from "~/server/mongodb";
 import { Err, Ok } from "~/types/monads";
@@ -106,10 +107,15 @@ export async function fetchUserHotTake(
       .find({})
       .toArray()) as unknown as DBUser[];
 
-    const mean =
-      allData.length > 0
-        ? allData.reduce((pre, cur) => pre + cur.score, 0) / allData.length
-        : score;
+    let scores = allData.map((s) => s.score);
+
+    if (scores.length === 0) scores = [score];
+
+    // Stats
+
+    const mean = average(scores);
+
+    const stdDev = standardDeviation(scores);
 
     // Response
 
@@ -126,6 +132,7 @@ export async function fetchUserHotTake(
       },
       stats: {
         mean,
+        standardDeviation: stdDev,
       },
     });
   } catch (e) {

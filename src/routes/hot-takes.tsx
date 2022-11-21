@@ -39,7 +39,7 @@ export default function HotTakes() {
           top: document.body.scrollHeight,
           behavior: "smooth",
         }),
-      100
+      500
     );
   }
 

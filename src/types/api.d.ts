@@ -31,6 +31,7 @@ interface HotTakeResult {
   };
   stats: {
     mean: number;
+    standardDeviation: number;
   };
 }
 

@@ -24,11 +24,11 @@ export default function HotTakeBar(partialProps: HotTakeBarProps) {
 
   const fullWidth = props.width + "px";
 
-  const [percent, setProgressWidth] = createSignal("0px");
+  const [width, setWidth] = createSignal("0px");
   const [color, setColor] = createSignal(props.emptyColor);
 
   setTimeout(() => {
-    setProgressWidth(props.width * props.percent + "px");
+    setWidth(props.width * Math.min(props.percent, 1.0) + "px");
     setColor(color_lerp(11));
   }, 10);
 
@@ -52,10 +52,16 @@ export default function HotTakeBar(partialProps: HotTakeBarProps) {
     .progress {
       transition: background-color 0.5s;
       height: inherit;
-      width: ${percent()};
+      width: ${width()};
       transition: width 4s, background-color 4s;
       background-color: ${color()};
       margin-right: auto;
+
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      padding-right: 8px;
+      font-weight: 900;
     }
   `;
 
