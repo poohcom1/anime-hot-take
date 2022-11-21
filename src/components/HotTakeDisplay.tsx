@@ -6,23 +6,37 @@ import HotTakeBar from "./HotTakeBar";
 interface Rank {
   name: string;
   description: string;
+  color: string;
 }
 
-const DEVIATIONS = 3;
+const DEVIATIONS = 5;
 
 const RANKS: Rank[] = [
   {
-    name: "Clout Chaser",
-    description: "...do you only watch anime to make friends?",
+    name: "Boring",
+    description: "You like FMA: Brotherhood, don't you?",
+    color: "#0000ff",
   },
-  { name: "Normie", description: "reeeeeeeeeeee" },
   {
     name: "Anituber",
-    description: "*Read reviews to validate insecure tastes*",
+    description: "*Writes reviews to validate insecure tastes*",
+    color: "#620cb7",
   },
-  { name: "Edge Lord", description: "occasionally browses 4chan" },
-  { name: "Contrarian", description: "Too cool to like FMA: Brotherhood" },
-  { name: "Legend", description: "Freed from the shackles of discourse" },
+  {
+    name: "Normie",
+    description: "Gets their tastes from reddit",
+    color: "#ffff39",
+  },
+  {
+    name: "4channer",
+    description: " > What does he mean by this?",
+    color: "#ff4000",
+  },
+  {
+    name: "Contrarian",
+    description: "Holy fuck that's edgy",
+    color: "#ff0000",
+  },
 ];
 
 interface HotTakeDisplayProps {
@@ -32,9 +46,28 @@ interface HotTakeDisplayProps {
 }
 
 export default function HotTakeDisplay(props: HotTakeDisplayProps) {
+  const score = props.hotTake.userData.score;
+  const mean = props.hotTake.stats.mean;
+  const stdDev = props.hotTake.stats.standardDeviation;
+
+  const start = mean - (stdDev * DEVIATIONS) / 2;
+  const end = mean + (stdDev * DEVIATIONS) / 2;
+
+  const percent = inverseLerp(score, start, end);
+
+  const rank =
+    RANKS[
+      clamp(
+        Math.floor((score - mean) / stdDev + DEVIATIONS / 2),
+        0,
+        RANKS.length - 1
+      )
+    ];
+
   css`
     h1 {
       margin: 16px;
+      color: ${rank.color};
     }
 
     h1,
@@ -71,40 +104,24 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
     }
   `;
 
-  const score = props.hotTake.userData.score;
-  const mean = props.hotTake.stats.mean;
-  const stdDev = props.hotTake.stats.standardDeviation;
-
-  const start = mean - stdDev * DEVIATIONS;
-  const end = mean + stdDev * DEVIATIONS;
-
-  const percent = inverseLerp(score, start, end);
-
-  const rank =
-    RANKS[
-      clamp(
-        Math.floor((score - mean) / stdDev) + DEVIATIONS,
-        0,
-        RANKS.length - 1
-      )
-    ];
-
   return (
     <div id={props.id} ref={props.ref}>
       <div class="container">
         <div>
           <div class="flex">
             <div>
-              <Delay delayMs={500}>
+              <Delay delayMs={200}>
                 <h3>{props.hotTake.userData.user.username}'s rank:</h3>
               </Delay>
-              <Delay delayMs={1000}>
+              <Delay delayMs={500}>
                 <h1>{rank.name}</h1>
-                <p>{rank.description}</p>
+                <p>
+                  <strong>{rank.description}</strong>
+                </p>
               </Delay>
             </div>
             <div class="user-img">
-              <Delay delayMs={500}>
+              <Delay delayMs={200}>
                 <img
                   src={props.hotTake.userData.user.images.webp.image_url}
                   height="200px"
@@ -112,22 +129,25 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
               </Delay>
             </div>
           </div>
-          <HotTakeBar percent={percent} width={1000} />
+          <Delay delayMs={200}>
+            <p style="color: grey; margin: 4px 0">Hot meter:</p>
+            <HotTakeBar percent={percent} width={1000} />
+          </Delay>
         </div>
         <div class="separator" />
         <div style="margin-left: 64px">
-          <Delay delayMs={1500}>
+          <Delay delayMs={1000}>
             <div>
               <h2>Hottest take:</h2>
               <img src={props.hotTake.userData.topAnime.image} height="400px" />
               <div class="hottest-anime">
                 <div>
-                  <h3>{props.hotTake.userData.user.username}'s Score</h3>
-                  <div>{props.hotTake.userData.topAnime.userScore}</div>
+                  <h3>Average score</h3>
+                  <h4>{props.hotTake.userData.topAnime.rating}</h4>
                 </div>
                 <div>
-                  <h3>Average score</h3>
-                  <div>{props.hotTake.userData.topAnime.rating}</div>
+                  <h3>{props.hotTake.userData.user.username}'s Score</h3>
+                  <h4>{props.hotTake.userData.topAnime.userScore}</h4>
                 </div>
               </div>
             </div>

@@ -7,17 +7,14 @@ interface HotTakeBarProps {
   width: number;
   height?: number;
   percent: number;
-  emptyColor?: string;
-  fullColor?: string;
 }
 
-export default function HotTakeBar(partialProps: HotTakeBarProps) {
-  const props = mergeProps(
-    { emptyColor: "blue", fullColor: "#ff0000", height: 40 },
-    partialProps
-  );
+const COLORS = ["#0000ff", "#620cb7", "#ffff39", "#ff4000", "#ff0000"];
 
-  const color_lerp = interpolate([props.emptyColor, props.fullColor]);
+export default function HotTakeBar(partialProps: HotTakeBarProps) {
+  const props = mergeProps({ height: 40 }, partialProps);
+
+  const colorLerp = interpolate(COLORS);
 
   const containerHeight = props.height + "px";
   const height = props.height - 4 + "px";
@@ -25,11 +22,12 @@ export default function HotTakeBar(partialProps: HotTakeBarProps) {
   const fullWidth = props.width + "px";
 
   const [width, setWidth] = createSignal("0px");
-  const [color, setColor] = createSignal(props.emptyColor);
+  const [color, setColor] = createSignal(COLORS[0]);
 
   setTimeout(() => {
     setWidth(props.width * Math.min(props.percent, 1.0) + "px");
-    setColor(color_lerp(11));
+    console.log(props.percent);
+    setColor(colorLerp(props.percent));
   }, 10);
 
   css`
@@ -53,8 +51,10 @@ export default function HotTakeBar(partialProps: HotTakeBarProps) {
       transition: background-color 0.5s;
       height: inherit;
       width: ${width()};
-      transition: width 4s, background-color 4s;
+      opacity: 90%;
+      transition: width 4s, background-color 4s, box-shadow 4s;
       background-color: ${color()};
+      box-shadow: 0 0 15px ${color()};
       margin-right: auto;
 
       display: flex;
