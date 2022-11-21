@@ -6,12 +6,20 @@ A web app to judge how boring your anime tastes are.
 ### Prerequisites
  - node
  - npm
+ - mongodb
  
-### Installation
+### Setup
 
+1. Install dependencies
  ```sh
  npm install
  ```
+2. Create a `.env` file:
+
+```sh
+VITE_MONGO_DB_URL=
+```
+ 
 ### Running
 ```sh
 npm run dev
