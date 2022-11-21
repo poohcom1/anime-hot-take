@@ -21,6 +21,7 @@
     "color-interpolate": "^1.0.5",
     "mongodb": "^4.12.0",
     "node-myanimelist": "^4.1.0",
+    "solid-apexcharts": "^0.2.3",
     "solid-js": "^1.6.0",
     "solid-start": "^0.2.5",
     "solid-styled": "^0.6.3",
