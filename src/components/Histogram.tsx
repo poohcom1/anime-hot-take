@@ -1,9 +1,9 @@
 import { createEffect, createSignal } from "solid-js";
-import { unstable_clientOnly } from "solid-start";
+// import { unstable_clientOnly } from "solid-start";
 
-const SolidApexCharts = unstable_clientOnly(async () => ({
-  default: (await import("solid-apexcharts")).SolidApexCharts,
-}));
+// const SolidApexCharts = unstable_clientOnly(async () => ({
+//   default: (await import("solid-apexcharts")).SolidApexCharts,
+// }));
 
 interface HistogramProps {
   data: number[];
@@ -27,31 +27,33 @@ export default function Histogram(props: HistogramProps) {
   });
 
   return (
-    <SolidApexCharts
-      type="histogram"
-      width="900"
-      options={{
-        xaxis: {
-          type: "numeric",
-          tickAmount: 10,
-        },
-        yaxis: {
-          labels: {
-            formatter: (val) => val.toFixed(0),
+    <div>
+      {/* <SolidApexCharts
+        type="histogram"
+        width="900"
+        options={{
+          xaxis: {
+            type: "numeric",
+            tickAmount: 10,
           },
-        },
-        dataLabels: {
-          formatter: (val, { dataPointIndex }) => {
-            return data()[dataPointIndex].x;
+          yaxis: {
+            labels: {
+              formatter: (val) => val.toFixed(0),
+            },
           },
-        },
-      }}
-      series={[
-        {
-          name: "Mean diff",
-          data: data(),
-        },
-      ]}
-    />
+          dataLabels: {
+            formatter: (val, { dataPointIndex }) => {
+              return data()[dataPointIndex].x;
+            },
+          },
+        }}
+        series={[
+          {
+            name: "Mean diff",
+            data: data(),
+          },
+        ]}
+      /> */}
+    </div>
   );
 }
