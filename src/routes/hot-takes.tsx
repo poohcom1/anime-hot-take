@@ -26,7 +26,7 @@ export default function HotTakes() {
   const [hotTake, setHotTake] = createSignal<HotTakeSignal>();
 
   let displayRef: HTMLDivElement | undefined;
-  let loadingRef: HTMLDivElement | undefined;
+  let loadingRef: HTMLImageElement | undefined;
 
   async function getHotTake() {
     setLoading(true);
