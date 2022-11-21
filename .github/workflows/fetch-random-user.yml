@@ -26,7 +26,7 @@ jobs:
           method: 'GET'
           timeout: 10000
           preventFailureOnNoResponse: 'true'
-          ignoreStatusCodes: 'true'
+          ignoreStatusCodes: '500'
       - name: Response
         if: ${{ steps.request.outputs.response != null}}
         run: |
