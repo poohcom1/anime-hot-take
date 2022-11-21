@@ -10,6 +10,7 @@ import { Err, Ok } from "~/types/monads";
 
 /**
  * Fetches the hot take data of the 'user' query parameter.
+ * If no query parameter is given, a random user will be fetched (this is slow).
  * @param apiEvent
  * @returns
  */
@@ -17,20 +18,22 @@ export async function GET(apiEvent: APIEvent) {
   const query = URL.parse(apiEvent.request.url, true).query;
 
   const user = (query.user as string) ?? (await randomUser()).data.username;
-  if (query.user) {
-    const res = await fetchUserHotTake(user);
 
-    if (res.ok) {
-      return json(res.ok);
-    } else {
-      return new Response(null, { status: 500, statusText: res.err });
-    }
+  const res = await fetchUserHotTake(user);
+
+  if (res.ok) {
+    return json(res.ok);
   } else {
-    return new Response(null, { status: 400, statusText: "No user provided" });
+    return new Response(null, { status: 500, statusText: res.err });
   }
 }
 
 // Functions
+
+interface DBSchema {
+  _id: string;
+  score: number;
+}
 
 /**
  * Fetches the user hot take data, the mean data, and updates the database
@@ -43,9 +46,11 @@ export async function fetchUserHotTake(
   try {
     const client = await getMalClient();
 
-    const user: JikanUser = (<{ data: JikanUser }>(
-      await Jikan4.jikanGet(`${Jikan4.jikanUrl}/users/${username}`)
-    )).data;
+    const user: JikanUser = (
+      (await Jikan4.jikanGet(
+        `${Jikan4.jikanUrl}/users/${username}`
+      )) as JikanUserResponse
+    ).data;
 
     const list = await client.user
       .animelist(username, Mal.Anime.fields().mean().myListStatus(), null, {
@@ -55,26 +60,22 @@ export async function fetchUserHotTake(
       })
       .call();
 
-    const anime = list.data;
-    // anime.sort((a, b) => -a.list_status.score + b.list_status.score);
-    let topAnime = anime.filter((anime) => anime.list_status.score >= 10);
+    const filteredData = list.data.filter(
+      (anime) => anime.list_status.score >= 10
+    );
 
-    if (topAnime.length === 0) {
-      topAnime = anime.slice(0, 10);
+    if (filteredData.length === 0) {
+      return Err("You don't have any 10s 🤔, maybe you are too edgy");
     }
 
-    if (anime.length === 0) {
-      return Err("bruh you don't have any anime");
-    }
-
-    let lowest = { diff: Infinity, anime: anime[0].node };
-    let highest = { diff: 0, anime: anime[0].node };
+    let lowest = { diff: Infinity, anime: filteredData[0].node };
+    let highest = { diff: 0, anime: filteredData[0].node };
 
     let total = 0;
 
-    for (let i = 0; i < topAnime.length; i++) {
-      const cur = topAnime[i];
-      const diff = Math.abs(cur.list_status.score - (cur.node.mean ?? 5));
+    for (let i = 0; i < filteredData.length; i++) {
+      const cur = filteredData[i];
+      const diff = Math.abs(cur.list_status.score - cur.node.mean!);
 
       if (diff < lowest.diff) {
         lowest.diff = diff;
@@ -89,16 +90,11 @@ export async function fetchUserHotTake(
       total += diff;
     }
 
-    const score =
-      topAnime.reduce(
-        (acc, cur) =>
-          acc + Math.abs(cur.list_status.score - (cur.node.mean ?? 5)),
-        0
-      ) / topAnime.length;
+    const score = total / filteredData.length;
 
     // Database
 
-    const doc: DBUser = {
+    const doc: DBSchema = {
       _id: username,
       score,
     };
@@ -114,7 +110,7 @@ export async function fetchUserHotTake(
 
     const allData = (await collection
       .find({})
-      .toArray()) as unknown as DBUser[];
+      .toArray()) as unknown as DBSchema[];
 
     const mean =
       allData.length > 0
@@ -130,26 +126,20 @@ export async function fetchUserHotTake(
         topAnime: {
           title: highest.anime.title,
           image: highest.anime.main_picture?.medium ?? "",
-          userScore: highest.anime.my_list_status.score,
-          rating: highest.anime.mean ?? 5,
+          userScore: highest.anime.my_list_status.score ?? 0,
+          rating: highest.anime.mean ?? 0,
         },
       },
-      statsData: {
+      stats: {
         mean,
       },
     });
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      if (e.response) {
-        switch (e.response.status) {
-          case 404:
-            return Err("Cannot find user u dum dum");
-          case 408:
-            return Err("idk server timed out");
-          default:
-            return Err(e.message);
-        }
+      if (e.response?.status === 404) {
+        return Err("Cannot find user u dum dum");
       }
+      return Err(e.message);
     }
     console.error(e);
     return Err("Unknown error");

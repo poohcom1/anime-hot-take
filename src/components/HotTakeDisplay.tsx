@@ -1,4 +1,4 @@
-import { createSelector, createSignal, JSX, mergeProps } from "solid-js";
+import { createSignal, JSX, mergeProps } from "solid-js";
 import { css } from "solid-styled";
 import HotTakeBar from "./HotTakeBar";
 

@@ -12,6 +12,10 @@ interface JikanUser {
   last_online: string;
 }
 
+interface JikanUserResponse {
+  data: JikanUser;
+}
+
 interface HotTakeAnime {
   title: string;
   image: string;
@@ -25,7 +29,7 @@ interface HotTakeResult {
     score: number;
     topAnime: HotTakeAnime;
   };
-  statsData: {
+  stats: {
     mean: number;
   };
 }

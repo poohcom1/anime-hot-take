@@ -1,11 +1,4 @@
-import {
-  createEffect,
-  createSignal,
-  Match,
-  onMount,
-  Show,
-  Switch,
-} from "solid-js";
+import { createSignal, Match, onMount, Show, Switch } from "solid-js";
 import { Title } from "solid-start";
 import { css } from "solid-styled";
 import server$ from "solid-start/server";
@@ -16,8 +9,6 @@ import LoadingImage from "~/assets/arima-ichika-ichika.gif";
 import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
 
 export default function HotTakes() {
-  const fetchData = server$(fetchUserHotTake);
-
   const [loading, setLoading] = createSignal(false);
 
   const [user, setUser] = createSignal("");
@@ -29,15 +20,11 @@ export default function HotTakes() {
   async function getHotTake() {
     setLoading(true);
 
-    const res = await fetchData(user());
+    const res = await server$(fetchUserHotTake)(user());
 
     setLoading(false);
     setHotTake(res);
   }
-
-  // Animation
-
-  const [barPercent, setBarPercent] = createSignal(0);
 
   css`
     main {
