@@ -3,8 +3,7 @@ import server$ from "solid-start/server";
 import { getMongoClient } from "~/server/mongodb";
 import { unstable_clientOnly } from "solid-start";
 import { css } from "solid-styled";
-
-const Chart = unstable_clientOnly(() => import("~/components/Histogram"));
+import Histogram from "~/components/Histogram";
 
 export default function Index() {
   const [scores, setScores] = createSignal<number[]>([]);
@@ -35,7 +34,7 @@ export default function Index() {
 
   return (
     <main>
-      <Chart data={scores()} />
+      <Histogram data={scores()} />
     </main>
   );
 }

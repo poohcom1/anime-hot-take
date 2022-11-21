@@ -1,5 +1,9 @@
-import { SolidApexCharts } from "solid-apexcharts";
 import { createEffect, createSignal } from "solid-js";
+import { unstable_clientOnly } from "solid-start";
+
+const SolidApexCharts = unstable_clientOnly(async () => ({
+  default: (await import("solid-apexcharts")).SolidApexCharts,
+}));
 
 interface HistogramProps {
   data: number[];
