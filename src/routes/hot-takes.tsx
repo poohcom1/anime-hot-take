@@ -1,4 +1,11 @@
-import { createSignal, Match, onMount, Show, Switch } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  Match,
+  onMount,
+  Show,
+  Switch,
+} from "solid-js";
 import { Title } from "solid-start";
 import { css } from "solid-styled";
 import server$ from "solid-start/server";
@@ -8,28 +15,38 @@ import HotTakeDisplay from "~/components/HotTakeDisplay";
 import LoadingImage from "~/assets/arima-ichika-ichika.gif";
 import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
 
+type HotTakeSignal = Result<HotTakeResult, string> | null;
+
 export default function HotTakes() {
-  const [loading, setLoading] = createSignal(false);
+  const fetchData = server$(fetchUserHotTake);
 
   const [user, setUser] = createSignal("");
-  const [hotTake, setHotTake] = createSignal<Result<
-    HotTakeResult,
-    string
-  > | null>(null);
+  const [loading, setLoading] = createSignal(false);
+  const [hotTake, setHotTake] = createSignal<HotTakeSignal>();
+
+  let displayRef: HTMLDivElement | undefined;
 
   async function getHotTake() {
     setLoading(true);
 
-    const res = await server$(fetchUserHotTake)(user());
+    const res = await fetchData(user());
 
     setLoading(false);
     setHotTake(res);
+
+    setTimeout(() => displayRef?.scrollIntoView({ behavior: "smooth" }), 100);
   }
 
   css`
+    @global {
+      html {
+        height: 100%;
+        background-color: #181717;
+      }
+    }
+
     main {
       color: white;
-      background-color: #181717;
       min-height: 100%;
       height: fit-content;
       font-size: large;
@@ -119,7 +136,9 @@ export default function HotTakes() {
                 }
                 keyed
               >
-                {(hotTake) => <HotTakeDisplay hotTake={hotTake} />}
+                {(hotTake) => (
+                  <HotTakeDisplay ref={displayRef} hotTake={hotTake} />
+                )}
               </Show>
             )}
           </Match>

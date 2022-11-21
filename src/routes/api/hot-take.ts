@@ -17,7 +17,7 @@ import { Err, Ok } from "~/types/monads";
 export async function GET(apiEvent: APIEvent) {
   const query = URL.parse(apiEvent.request.url, true).query;
 
-  const user = (query.user as string) ?? (await randomUser()).data.username;
+  const user = (query.user as string) ?? "poohcom1";
 
   const res = await fetchUserHotTake(user);
 
@@ -29,11 +29,6 @@ export async function GET(apiEvent: APIEvent) {
 }
 
 // Functions
-
-interface DBSchema {
-  _id: string;
-  score: number;
-}
 
 /**
  * Fetches the user hot take data, the mean data, and updates the database
@@ -68,23 +63,22 @@ export async function fetchUserHotTake(
       return Err("You don't have any 10s 🤔, maybe you are too edgy");
     }
 
-    let lowest = { diff: Infinity, anime: filteredData[0].node };
-    let highest = { diff: 0, anime: filteredData[0].node };
+    let lowest = { diff: Infinity, anime: filteredData[0] };
+    let highest = { diff: 0, anime: filteredData[0] };
 
     let total = 0;
 
-    for (let i = 0; i < filteredData.length; i++) {
-      const cur = filteredData[i];
-      const diff = Math.abs(cur.list_status.score - cur.node.mean!);
+    for (const anime of filteredData) {
+      const diff = Math.abs(anime.list_status.score - anime.node.mean!);
 
       if (diff < lowest.diff) {
         lowest.diff = diff;
-        lowest.anime = cur.node;
+        lowest.anime = anime;
       }
 
       if (diff > highest.diff) {
         highest.diff = diff;
-        highest.anime = cur.node;
+        highest.anime = anime;
       }
 
       total += diff;
@@ -94,7 +88,7 @@ export async function fetchUserHotTake(
 
     // Database
 
-    const doc: DBSchema = {
+    const doc: DBUser = {
       _id: username,
       score,
     };
@@ -110,7 +104,7 @@ export async function fetchUserHotTake(
 
     const allData = (await collection
       .find({})
-      .toArray()) as unknown as DBSchema[];
+      .toArray()) as unknown as DBUser[];
 
     const mean =
       allData.length > 0
@@ -124,10 +118,10 @@ export async function fetchUserHotTake(
         user,
         score,
         topAnime: {
-          title: highest.anime.title,
-          image: highest.anime.main_picture?.medium ?? "",
-          userScore: highest.anime.my_list_status.score ?? 0,
-          rating: highest.anime.mean ?? 0,
+          title: highest.anime.node.title,
+          image: highest.anime.node.main_picture?.medium ?? "",
+          userScore: highest.anime.list_status.score,
+          rating: highest.anime.node.mean ?? 5,
         },
       },
       stats: {
@@ -144,12 +138,4 @@ export async function fetchUserHotTake(
     console.error(e);
     return Err("Unknown error");
   }
-}
-
-async function randomUser() {
-  const res = await fetch("https://api.jikan.moe/v4/random/users");
-
-  const user = await res.json();
-
-  return user;
 }
