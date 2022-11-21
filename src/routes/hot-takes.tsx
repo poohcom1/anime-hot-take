@@ -24,8 +24,6 @@ export default function HotTakes() {
   const [loading, setLoading] = createSignal(false);
   const [hotTake, setHotTake] = createSignal<HotTakeSignal>();
 
-  let displayRef: HTMLDivElement | undefined;
-
   async function getHotTake() {
     setLoading(true);
 
@@ -34,7 +32,15 @@ export default function HotTakes() {
     setLoading(false);
     setHotTake(res);
 
-    setTimeout(() => displayRef?.scrollIntoView({ behavior: "smooth" }), 100);
+    setTimeout(
+      () =>
+        window.scrollTo({
+          left: 0,
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        }),
+      100
+    );
   }
 
   css`
@@ -136,9 +142,7 @@ export default function HotTakes() {
                 }
                 keyed
               >
-                {(hotTake) => (
-                  <HotTakeDisplay ref={displayRef} hotTake={hotTake} />
-                )}
+                {(hotTake) => <HotTakeDisplay hotTake={hotTake} />}
               </Show>
             )}
           </Match>
