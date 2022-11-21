@@ -52,7 +52,7 @@ export default function HotTakeBar(partialProps: HotTakeBarProps) {
       height: inherit;
       width: ${width()};
       opacity: 90%;
-      transition: width 4s, background-color 4s, box-shadow 4s;
+      transition: width 3s, background-color 3s, box-shadow 3s;
       background-color: ${color()};
       box-shadow: 0 0 15px ${color()};
       margin-right: auto;

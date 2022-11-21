@@ -1,4 +1,4 @@
-import { APIEvent, json, ResponseError } from "solid-start";
+import { APIEvent, json } from "solid-start";
 import URL from "url";
 import axios from "axios";
 import { Jikan4, Mal } from "node-myanimelist";
@@ -145,4 +145,12 @@ export async function fetchUserHotTake(
     console.error(e);
     return Err("Unknown error");
   }
+}
+
+export async function randomUser() {
+  const res = await fetch("https://api.jikan.moe/v4/random/users");
+
+  const user = await res.json();
+
+  return user as JikanUserResponse;
 }
