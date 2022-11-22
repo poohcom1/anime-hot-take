@@ -23,13 +23,23 @@ interface HotTakeAnime {
   rating: number;
 }
 
+interface AnimeScore {
+  userScore: number;
+  meanScore: number;
+  title: string;
+}
+
 interface HotTakeResult {
   userData: {
     user: JikanUser;
+    rawData: AnimeScore[];
     score: number;
+    rank: number;
     topAnime: HotTakeAnime;
   };
   stats: {
+    min: number;
+    max: number;
     mean: number;
     standardDeviation: number;
   };

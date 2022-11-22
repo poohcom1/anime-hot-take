@@ -11,7 +11,7 @@ interface HotTakeBarProps {
 
 const COLORS = ["#0000ff", "#620cb7", "#ffff39", "#ff4000", "#ff0000"];
 
-export default function HotTakeBar(partialProps: HotTakeBarProps) {
+export default function GradientProgress(partialProps: HotTakeBarProps) {
   const props = mergeProps({ height: 40 }, partialProps);
 
   const colorLerp = interpolate(COLORS);

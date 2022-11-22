@@ -1,5 +1,6 @@
 import { Title } from "solid-start";
 import { HttpStatusCode } from "solid-start/server";
+import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
 
 export default function NotFound() {
   return (
@@ -7,13 +8,7 @@ export default function NotFound() {
       <Title>Not Found</Title>
       <HttpStatusCode code={404} />
       <h1>Page Not Found</h1>
-      <p>
-        Visit
-        <a href="https://start.solidjs.com" target="_blank">
-          start.solidjs.com
-        </a>
-        to learn how to build SolidStart apps.
-      </p>
+      <img src={NotFoundImage} alt="Not found" />
     </main>
   );
 }

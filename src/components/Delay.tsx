@@ -14,8 +14,9 @@ export default function Delay(baseProps: DelayedDisplayProps) {
   const [show, setShow] = createSignal(false);
 
   css`
-    .container,
-    .container * {
+    .delay,
+    .delay * {
+      width: inherit;
       opacity: ${show() ? "100%" : "0%"};
       transition: opacity ${props.transitionMs / 1000 + "s"};
     }
@@ -23,5 +24,5 @@ export default function Delay(baseProps: DelayedDisplayProps) {
 
   setTimeout(() => setShow(true), props.delayMs);
 
-  return <div class={`container ${props.class}`}>{props.children}</div>;
+  return <div class={`delay ${props.class ?? ""}`}>{props.children}</div>;
 }

@@ -1,7 +1,12 @@
+import { createSignal, For } from "solid-js";
 import { css } from "solid-styled";
+import { Collapse } from "solid-collapse";
+import { FaSolidCircleInfo as InfoCircle } from "solid-icons/fa";
 import { clamp, inverseLerp } from "~/utils/math";
 import Delay from "./Delay";
-import HotTakeBar from "./HotTakeBar";
+import GradientProgress from "./GradientProgress";
+
+import style from "./HotTakeDisplay.module.css";
 
 interface Rank {
   name: string;
@@ -13,8 +18,8 @@ const DEVIATIONS = 5;
 
 const RANKS: Rank[] = [
   {
-    name: "Boring",
-    description: "You like FMA: Brotherhood, don't you?",
+    name: "Soulless",
+    description: "Let me guess, you like FMA: Brotherhood",
     color: "#0000ff",
   },
   {
@@ -54,6 +59,22 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
   const end = mean + (stdDev * DEVIATIONS) / 2;
 
   const percent = inverseLerp(score, start, end);
+
+  // Animation
+  const [showInfo, setShowInfo] = createSignal(false);
+  const toggleInfo = () => {
+    const show = showInfo();
+    setShowInfo(!showInfo());
+    if (!show) {
+      setTimeout(
+        () =>
+          document
+            .querySelector(".info-text")
+            ?.scrollIntoView({ behavior: "smooth" }),
+        300
+      );
+    }
+  };
 
   const rank =
     RANKS[
@@ -99,13 +120,18 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
       display: flex;
     }
 
+    .rank-section {
+      min-width: 50vw;
+    }
+
     .user-info {
-      width: 50vw;
+      width: 100%;
     }
 
     .user-img {
       margin-left: auto;
       justify-self: end;
+      flex-shrink: 5;
     }
 
     .separator {
@@ -114,6 +140,36 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
 
     .center-text {
       text-align: center;
+    }
+
+    .info-section {
+      margin: 16px 0;
+      margin-left: 0;
+      color: gray;
+      overflow: hidden;
+      border-radius: 8px;
+      background-color: ${showInfo() ? "#ffffff0a" : "transparent"};
+    }
+
+    .info-section-toggle {
+      padding: 16px;
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+
+    .info-section-toggle:hover {
+      background-color: #ffffff22;
+    }
+
+    .info-text {
+      padding: 8px;
+      text-align: left;
+    }
+
+    .info-text > div {
+      margin: 4px;
     }
 
     @media only screen and (max-width: 1000px) {
@@ -132,12 +188,15 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
     }
   `;
 
+  console.table(props.hotTake.userData.rawData);
+
   return (
     <div id={props.id} ref={props.ref}>
       <div class="container">
         <div>
-          <div class="flex user-info">
-            <div>
+          {/* Rank and Bar */}
+          <div class="flex rank-section">
+            <div class="user-info">
               <Delay delayMs={200}>
                 <h3>{props.hotTake.userData.user.username}'s rank:</h3>
               </Delay>
@@ -158,17 +217,18 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
             </div>
           </div>
           <Delay delayMs={200}>
-            <p style="color: grey; margin: 4px 0">Hot meter:</p>
-            <HotTakeBar percent={percent} width={1000} />
+            <p style={{ color: "grey", margin: "4px 0" }}>Hot meter:</p>
+            <GradientProgress percent={percent} width={1000} />
           </Delay>
         </div>
         <div class="separator" />
+        {/* Hottest Anime */}
         <div>
           <Delay delayMs={1000}>
             <div>
               <h2>Hottest take:</h2>
-              <img src={props.hotTake.userData.topAnime.image} height="400px" />
               <h4>{props.hotTake.userData.topAnime.title}</h4>
+              <img src={props.hotTake.userData.topAnime.image} height="300px" />
               <div class="hottest-anime">
                 <div>
                   <h3 class="center-text">Average score</h3>
@@ -184,6 +244,49 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
             </div>
           </Delay>
         </div>
+      </div>
+      {/* Info */}
+      <div class="info-section">
+        <div class="info-section-toggle" onClick={toggleInfo}>
+          <InfoCircle style={{ "margin-left": "0px" }} />
+          <span style={{ "margin-left": "8px", "user-select": "none" }}>
+            More Info
+          </span>
+        </div>
+        <Collapse value={showInfo()} class={style.infoCollapse}>
+          <div class="info-text">
+            <div>
+              Ranking is calculated by getting the average difference between
+              your top anime scores and the said anime's mean rating.
+            </div>
+            <br />
+            <For
+              each={[
+                ["User Raw Score", props.hotTake.userData.score.toFixed(2)],
+                [
+                  "User Percentile",
+                  (props.hotTake.userData.rank * 100).toFixed(0) + "%",
+                ],
+                ["Data points", props.hotTake.userData.rawData.length],
+                [],
+                ["Mean Score", props.hotTake.stats.mean.toFixed(2)],
+                ["Min Score", props.hotTake.stats.min.toFixed(2)],
+                ["Max Score", props.hotTake.stats.max.toFixed(2)],
+                [
+                  "Standard Deviation",
+                  props.hotTake.stats.standardDeviation.toFixed(2),
+                ],
+              ]}
+            >
+              {([label, text]) => (
+                <div>
+                  {label}
+                  {label ? ":" : <br />} <strong>{text}</strong>
+                </div>
+              )}
+            </For>
+          </div>
+        </Collapse>
       </div>
     </div>
   );

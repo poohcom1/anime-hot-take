@@ -29,6 +29,8 @@ function GlobalStyles() {
         margin: 0;
         height: 100%;
         font-size: larger;
+        display: flex;
+        flex-direction: column;
       }
 
       a {
@@ -42,6 +44,7 @@ function GlobalStyles() {
       }
 
       h1 {
+        display: block;
         color: #335d92;
         text-transform: uppercase;
         font-size: 4rem;
@@ -52,14 +55,14 @@ function GlobalStyles() {
       }
 
       p {
-        max-width: 14rem;
         margin: 2rem auto;
         line-height: 1.35;
       }
 
       @media only screen and (max-width: 1000px) {
         h1 {
-          font-size: 3rem;
+          margin: 2rem auto;
+          font-size: 2rem;
         }
       }
 

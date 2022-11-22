@@ -2,7 +2,14 @@ import { APIEvent, json } from "solid-start";
 import URL from "url";
 import axios from "axios";
 import { Jikan4, Mal } from "node-myanimelist";
-import { standardDeviation, mean as average } from "simple-statistics";
+import {
+  standardDeviation,
+  mean as average,
+  sum,
+  min,
+  max,
+  quantileRank,
+} from "simple-statistics";
 import { getMalClient } from "~/server/malClient";
 import { getMongoClient } from "~/server/mongodb";
 import { Err, Ok } from "~/types/monads";
@@ -31,13 +38,29 @@ export async function GET(apiEvent: APIEvent) {
 
 // Functions
 
+function averageDiff(
+  anime: {
+    node: { mean: number | null };
+    list_status: { score: number };
+  }[]
+) {
+  return (
+    anime.reduce(
+      (pre, cur) =>
+        Math.abs(cur.list_status.score - (cur.node.mean ?? 5)) + pre,
+      0
+    ) / anime.length
+  );
+}
+
 /**
  * Fetches the user hot take data, the mean data, and updates the database
  * @param username
  * @returns
  */
 export async function fetchUserHotTake(
-  username: string
+  username: string,
+  minCount = 9
 ): Promise<Result<HotTakeResult, string>> {
   try {
     const client = await getMalClient();
@@ -56,36 +79,46 @@ export async function fetchUserHotTake(
       })
       .call();
 
-    const filteredData = list.data.filter(
-      (anime) => anime.list_status.score >= 10
-    );
-
-    if (filteredData.length === 0) {
-      return Err("You don't have any 10s 🤔, maybe you are too edgy");
+    if (list.data.length === 0) {
+      return Err("Not enough data from list 🤔, are there any actual ratings?");
     }
 
-    let lowest = { diff: Infinity, anime: filteredData[0] };
+    const filteredData = list.data.filter((a) => a.list_status.score === 10);
+
+    // Calculate
     let highest = { diff: 0, anime: filteredData[0] };
 
-    let total = 0;
+    const diffs: number[] = [];
 
     for (const anime of filteredData) {
       const diff = Math.abs(anime.list_status.score - anime.node.mean!);
-
-      if (diff < lowest.diff) {
-        lowest.diff = diff;
-        lowest.anime = anime;
-      }
 
       if (diff > highest.diff) {
         highest.diff = diff;
         highest.anime = anime;
       }
 
-      total += diff;
+      diffs.push(diff);
     }
 
-    const score = total / filteredData.length;
+    // Score sweeping
+    let count = filteredData.length;
+    let scoreBase = 9;
+
+    while (count < minCount && scoreBase >= 0) {
+      const animeData = list.data.filter(
+        (a) => a.list_status.score === scoreBase
+      );
+
+      const avg = averageDiff(animeData);
+      filteredData.push(...animeData);
+
+      diffs.push(avg);
+      count++;
+    }
+
+    // Final score
+    const score = sum(diffs) / count;
 
     // Database
 
@@ -107,21 +140,29 @@ export async function fetchUserHotTake(
       .find({})
       .toArray()) as unknown as DBUser[];
 
-    let scores = allData.map((s) => s.score);
+    let allScores = allData.map((s) => s.score);
 
-    if (scores.length === 0) scores = [score];
+    if (allScores.length === 0) allScores = [score];
 
     // Stats
 
-    const mean = average(scores);
+    const mean = average(allScores);
 
-    const stdDev = standardDeviation(scores);
+    const stdDev = standardDeviation(allScores);
 
     // Response
 
     return Ok({
       userData: {
         user,
+        rawData: filteredData.map(
+          (a): AnimeScore => ({
+            userScore: a.list_status.score,
+            meanScore: a.node.mean ?? 5,
+            title: a.node.title,
+          })
+        ),
+        rank: quantileRank(allScores, score),
         score,
         topAnime: {
           title: highest.anime.node.title,
@@ -131,6 +172,8 @@ export async function fetchUserHotTake(
         },
       },
       stats: {
+        min: min(allScores),
+        max: max(allScores),
         mean,
         standardDeviation: stdDev,
       },

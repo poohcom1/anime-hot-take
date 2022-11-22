@@ -25,10 +25,12 @@ export default function HotTakes() {
   const [loading, setLoading] = createSignal(false);
   const [hotTake, setHotTake] = createSignal<HotTakeSignal>();
 
+  let inputRef: HTMLInputElement | undefined;
   let displayRef: HTMLDivElement | undefined;
   let loadingRef: HTMLImageElement | undefined;
 
   async function getHotTake() {
+    inputRef?.blur();
     setLoading(true);
 
     setTimeout(
@@ -52,8 +54,6 @@ export default function HotTakes() {
       500
     );
   }
-
-  let inputRef: HTMLInputElement | undefined;
 
   onMount(() => {
     inputRef?.focus();
@@ -99,16 +99,47 @@ export default function HotTakes() {
       width: 320px;
     }
 
+    input:disabled {
+      color: gray;
+    }
+
     input:focus {
       border-bottom-color: white;
       transition: border-bottom-color 0.2s;
     }
 
-    .hot-take__results {
+    .results {
       margin: 16px;
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    .loading {
+      opacity: ${loading() ? "100%" : "0%"};
+      transition: opacity 0.2s;
+      position: absolute;
+      margin-top: 16px;
+      margin-left: auto;
+      margin-right: auto;
+      left: 0;
+      right: 0;
+      z-index: -1;
+    }
+
+    @media only screen and (max-width: 768px) {
+      h1 {
+        margin: inherit 0;
+      }
+
+      h1 img {
+        display: block;
+        margin: auto;
+      }
+
+      .loading {
+        width: 90%;
+      }
     }
   `;
 
@@ -117,18 +148,28 @@ export default function HotTakes() {
       <Title>Hot Takes</Title>
       <h1>
         How hot are your anime takes?
-        <img src={ThinkingImage} height="70px" style="margin-left: 32px" />
+        <img src={ThinkingImage} height="70px" />
       </h1>
 
       <br />
       <input
         ref={inputRef}
+        disabled={loading()}
         id="usernameInput"
         type="text"
-        placeholder="Enter your MAL username"
+        placeholder="Enter a MAL username"
         value={user()}
-        onKeyUp={async (e) => e.key === "Enter" && (await getHotTake())}
-        onInput={(e) => setUser(e.currentTarget.value)}
+        onKeyUp={async (e) => {
+          if (e.key === " ") e.stopImmediatePropagation();
+          if (e.key === "Enter") await getHotTake();
+        }}
+        onInput={(e) => {
+          const value = e.currentTarget.value;
+          if (!value.includes(" "))
+            setUser(e.currentTarget.value.replaceAll(" ", ""));
+          else return (e.currentTarget.value = user());
+        }}
+        onFocus={() => inputRef?.select()}
       />
       <Button
         class="go-button"
@@ -138,13 +179,11 @@ export default function HotTakes() {
         Go
       </Button>
       <br />
-      <div class="hot-take__results">
+      <img ref={loadingRef} class="loading" src={LoadingImage} />
+      <div class="results">
         <Switch>
-          <Match when={loading()}>
-            <img ref={loadingRef} src={LoadingImage} />
-          </Match>
           <Match when={!hotTake()}>{/* Initial */}</Match>
-          <Match when={hotTake()} keyed>
+          <Match when={!loading() && hotTake()} keyed>
             {(res) => (
               <Show
                 when={res.ok}
