@@ -183,6 +183,7 @@ export async function fetchUserHotTake(
         max: max(allScores),
         mean,
         standardDeviation: stdDev,
+        count: allScores.length
       },
     });
   } catch (e) {

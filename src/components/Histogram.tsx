@@ -18,7 +18,7 @@ export default function Histogram(props: HistogramProps) {
         props.data.reduce((acc, curr) => {
           acc[curr] ? ++acc[curr] : (acc[curr] = 1);
           return { ...acc };
-        }, {})
+        }, {} as Record<number, number>)
       ).map(([key, value]) => ({
         x: parseFloat(key),
         y: value as number,
