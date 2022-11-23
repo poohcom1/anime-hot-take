@@ -1,11 +1,4 @@
-import {
-  createEffect,
-  createSignal,
-  Match,
-  onMount,
-  Show,
-  Switch,
-} from "solid-js";
+import { createSignal, Match, onMount, Show, Switch } from "solid-js";
 import { Title } from "solid-start";
 import { css } from "solid-styled";
 import server$ from "solid-start/server";
