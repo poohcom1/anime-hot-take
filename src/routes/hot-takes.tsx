@@ -103,6 +103,7 @@ export default function HotTakes() {
 
     .results {
       margin: 16px;
+      margin-top: 32px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -141,7 +142,12 @@ export default function HotTakes() {
       <Title>Hot Takes</Title>
       <h1>
         How hot are your anime takes?
-        <img src={ThinkingImage} height="70px" />
+        <img
+          src={ThinkingImage}
+          height="70px"
+          width="70px"
+          style={{ "margin-left": "16px" }}
+        />
       </h1>
 
       <br />
