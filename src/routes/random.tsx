@@ -7,7 +7,8 @@ import {
   Switch,
 } from "solid-js";
 import server$ from "solid-start/server";
-import { fetchUserHotTake, randomUser } from "./api/hot-take";
+import { fetchAndCalculateHotTake } from "~/server/hotTakeLib";
+import { randomUser } from "./api/hot-take";
 
 export default function Index() {
   const [state, setState] = createSignal<"none" | "user" | "take">("none");
@@ -15,7 +16,7 @@ export default function Index() {
   const fetchRandomUser = server$(async () => await randomUser());
 
   const fetchScore = server$(
-    async (user: string) => await fetchUserHotTake(user)
+    async (user: string) => await fetchAndCalculateHotTake(user)
   );
 
   const [score, setScore] = createSignal<Result<
