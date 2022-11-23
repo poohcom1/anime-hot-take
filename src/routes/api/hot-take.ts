@@ -44,6 +44,9 @@ function averageDiff(
     list_status: { score: number };
   }[]
 ) {
+  if (anime.length === 0) {
+    return 0;
+  }
   return (
     anime.reduce(
       (pre, cur) =>
@@ -121,6 +124,10 @@ export async function fetchUserHotTake(
     const score = sum(diffs) / count;
 
     // Database
+
+    if (isNaN(score)) {
+      return Err("Something went wrong with maths :(");
+    }
 
     const doc: DBUser = {
       _id: username,
