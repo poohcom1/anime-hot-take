@@ -22,5 +22,5 @@ jobs:
       - run: npm ci
       - name: Update DB
         env:
-          super_secret: ${{ secrets.MONGODB_URL }}
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
         run: npm run db:update
