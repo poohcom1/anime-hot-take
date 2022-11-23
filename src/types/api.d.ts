@@ -38,10 +38,11 @@ interface HotTakeResult {
     topAnime: HotTakeAnime;
   };
   stats: {
-    min: number;
-    max: number;
-    mean: number;
-    standardDeviation: number;
+    min: number | null;
+    max: number | null;
+    mean: number | null;
+    standardDeviation: number | null;
+    count: number | null;
   };
 }
 

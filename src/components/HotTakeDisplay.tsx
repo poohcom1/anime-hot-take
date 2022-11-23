@@ -51,9 +51,9 @@ interface HotTakeDisplayProps {
 }
 
 export default function HotTakeDisplay(props: HotTakeDisplayProps) {
-  const score = props.hotTake.userData.score;
-  const mean = props.hotTake.stats.mean;
-  const stdDev = props.hotTake.stats.standardDeviation;
+  const score = props.hotTake.userData.score ?? 0;
+  const mean = props.hotTake.stats.mean ?? 0;
+  const stdDev = props.hotTake.stats.standardDeviation ?? 0;
 
   const start = mean - (stdDev * DEVIATIONS) / 2;
   const end = mean + (stdDev * DEVIATIONS) / 2;
@@ -78,11 +78,11 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
 
   const rank =
     RANKS[
-      clamp(
-        Math.floor((score - mean) / stdDev + DEVIATIONS / 2),
-        0,
-        RANKS.length - 1
-      )
+    clamp(
+      Math.floor((score - mean) / stdDev + DEVIATIONS / 2),
+      0,
+      RANKS.length - 1
+    )
     ];
 
   css`
@@ -253,8 +253,8 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
             More Info
           </span>
         </div>
-        <Collapse value={showInfo()} class={style.infoCollapse}>
-          <div class="info-text">
+        <div class="info-text">
+          <Collapse value={showInfo()} class={style.infoCollapse}>
             <div>
               Ranking is calculated by getting the average difference between
               your top anime scores and the said anime's mean rating.
@@ -269,12 +269,15 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
                 ],
                 ["Data points", props.hotTake.userData.rawData.length],
                 [],
-                ["Mean Score", props.hotTake.stats.mean.toFixed(2)],
-                ["Min Score", props.hotTake.stats.min.toFixed(2)],
-                ["Max Score", props.hotTake.stats.max.toFixed(2)],
+                ["Mean Score", props.hotTake.stats.mean?.toFixed(2)],
+                ["Min Score", props.hotTake.stats.min?.toFixed(2)],
+                ["Max Score", props.hotTake.stats.max?.toFixed(2)],
                 [
                   "Standard Deviation",
-                  props.hotTake.stats.standardDeviation.toFixed(2),
+                  props.hotTake.stats.standardDeviation?.toFixed(2),
+                ],[
+                  "N",
+                  props.hotTake.stats.count ?? 0,
                 ],
               ]}
             >
@@ -285,8 +288,8 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
                 </div>
               )}
             </For>
-          </div>
-        </Collapse>
+          </Collapse>
+        </div>
       </div>
     </div>
   );
