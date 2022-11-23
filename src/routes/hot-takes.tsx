@@ -10,16 +10,16 @@ import { Title } from "solid-start";
 import { css } from "solid-styled";
 import server$ from "solid-start/server";
 import Button from "~/components/Button";
-import { fetchUserHotTake } from "./api/hot-take";
 import HotTakeDisplay from "~/components/HotTakeDisplay";
 import ThinkingImage from "~/assets/thinking.png";
 import LoadingImage from "~/assets/arima-ichika-ichika.gif";
 import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
+import { fetchAndCalculateHotTake } from "~/server/hotTakeLib";
 
 type HotTakeSignal = Result<HotTakeResult, string> | null;
 
 export default function HotTakes() {
-  const fetchData = server$(fetchUserHotTake);
+  const fetchData = server$(fetchAndCalculateHotTake);
 
   const [user, setUser] = createSignal("");
   const [loading, setLoading] = createSignal(false);

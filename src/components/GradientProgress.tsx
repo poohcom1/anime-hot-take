@@ -7,19 +7,18 @@ interface HotTakeBarProps {
   width: number;
   height?: number;
   percent: number;
+  animTime?: number;
 }
 
-const COLORS = ["#0000ff", "#620cb7", "#ffff39", "#ff4000", "#ff0000"];
+const COLORS = ["#0000ff", "#6a108a", "#ffd900", "#ff0000"];
 
 export default function GradientProgress(partialProps: HotTakeBarProps) {
-  const props = mergeProps({ height: 40 }, partialProps);
+  const props = mergeProps({ height: 40, animTime: 4 }, partialProps);
 
   const colorLerp = interpolate(COLORS);
 
   const containerHeight = props.height + "px";
   const height = props.height - 4 + "px";
-
-  const fullWidth = props.width + "px";
 
   const [width, setWidth] = createSignal("0%");
   const [color, setColor] = createSignal(COLORS[0]);
@@ -48,11 +47,12 @@ export default function GradientProgress(partialProps: HotTakeBarProps) {
     }
 
     .progress {
-      transition: background-color 0.5s;
       height: inherit;
       width: ${width()};
       opacity: 90%;
-      transition: width 3s, background-color 3s, box-shadow 3s;
+      transition: width ${props.animTime + "s"},
+        background-color ${props.animTime + "s"},
+        box-shadow ${props.animTime + "s"};
       background-color: ${color()};
       box-shadow: 0 0 15px ${color()};
       margin-right: auto;

@@ -16,26 +16,21 @@ interface JikanUserResponse {
   data: JikanUser;
 }
 
-interface HotTakeAnime {
-  title: string;
-  image: string;
-  userScore: number;
-  rating: number;
-}
-
-interface AnimeScore {
+interface AnimeSummary {
   userScore: number;
   meanScore: number;
+  image: string;
   title: string;
 }
 
 interface HotTakeResult {
   userData: {
     user: JikanUser;
-    rawData: AnimeScore[];
+    rawData: AnimeSummary[];
     score: number;
     rank: number;
-    topAnime: HotTakeAnime;
+    highest: AnimeSummary;
+    lowest: AnimeSummary;
   };
   stats: {
     min: number | null;

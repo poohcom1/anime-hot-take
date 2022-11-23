@@ -1,5 +1,6 @@
 import { APIEvent, json } from "solid-start";
 import URL from "url";
+import { SCORES_COLLECTION } from "~/server/hotTakeLib";
 import { getMongoClient } from "~/server/mongodb";
 
 export interface StatsResponse {
@@ -28,7 +29,7 @@ export async function GET(apiEvent: APIEvent) {
 
   const users = (await mongoClient
     .db()
-    .collection("scores")
+    .collection(SCORES_COLLECTION)
     .find({})
     .toArray()) as unknown as DBUser[];
 
