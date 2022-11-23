@@ -147,7 +147,7 @@ export async function fetchUserHotTake(
       .find({})
       .toArray()) as unknown as DBUser[];
 
-    let allScores = allData.map((s) => s.score);
+    let allScores = allData.map((s) => s.score).filter((s) => !!s && !isNaN(s));
 
     if (allScores.length === 0) allScores = [score];
 
