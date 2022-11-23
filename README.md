@@ -1,26 +1,31 @@
 # Anime Hot Take
-A web app to judge how boring your anime tastes are. 
+
+A web app to judge how boring your anime tastes are.
 
 ## Development
 
 ### Prerequisites
- - node
- - npm
- - mongodb
- 
+
+- node
+- npm
+- mongodb
+
 ### Setup
 
 1. Install dependencies
- ```sh
- npm install
- ```
+
+```sh
+npm install
+```
+
 2. Create a `.env` file:
 
 ```sh
-VITE_MONGO_DB_URL=
+MONGODB_URL=
 ```
- 
+
 ### Running
+
 ```sh
 npm run dev
 ```

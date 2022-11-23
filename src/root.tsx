@@ -13,7 +13,7 @@ import {
   Scripts,
   Title,
 } from "solid-start";
-import { css, renderSheets, StyleRegistry } from "solid-styled";
+import { css, renderSheets, StyleData, StyleRegistry } from "solid-styled";
 
 function GlobalStyles() {
   css`
@@ -81,7 +81,7 @@ function GlobalStyles() {
 }
 
 export default function Root() {
-  const sheets = [];
+  const sheets: StyleData[] = [];
   useAssets(() => renderSheets(sheets));
 
   return (

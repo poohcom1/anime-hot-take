@@ -78,11 +78,11 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
 
   const rank =
     RANKS[
-    clamp(
-      Math.floor((score - mean) / stdDev + DEVIATIONS / 2),
-      0,
-      RANKS.length - 1
-    )
+      clamp(
+        Math.floor((score - mean) / stdDev + DEVIATIONS / 2),
+        0,
+        RANKS.length - 1
+      )
     ];
 
   css`
@@ -143,8 +143,8 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
     }
 
     .info-section {
-      margin: 16px 0;
-      margin-left: 0;
+      width: 80vw;
+      margin: 16px auto;
       color: gray;
       overflow: hidden;
       border-radius: 8px;
@@ -164,12 +164,13 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
     }
 
     .info-text {
+      margin: 0;
       padding: 8px;
       text-align: left;
     }
 
-    .info-text > div {
-      margin: 4px;
+    .info-text > p {
+      margin: 4px 0;
     }
 
     @media only screen and (max-width: 1000px) {
@@ -253,19 +254,19 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
             More Info
           </span>
         </div>
-        <div class="info-text">
-          <Collapse value={showInfo()} class={style.infoCollapse}>
-            <div>
+        <Collapse value={showInfo()} class={`${style.infoCollapse}`}>
+          <div class="info-text">
+            <p>
               Ranking is calculated by getting the average difference between
               your top anime scores and the said anime's mean rating.
-            </div>
+            </p>
             <br />
             <For
               each={[
-                ["User Raw Score", props.hotTake.userData.score.toFixed(2)],
+                ["User Raw Score", props.hotTake.userData.score?.toFixed(2)],
                 [
                   "User Percentile",
-                  (props.hotTake.userData.rank * 100).toFixed(0) + "%",
+                  ((props.hotTake.userData.rank ?? 0) * 100).toFixed(0) + "%",
                 ],
                 ["Data points", props.hotTake.userData.rawData.length],
                 [],
@@ -275,21 +276,20 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
                 [
                   "Standard Deviation",
                   props.hotTake.stats.standardDeviation?.toFixed(2),
-                ],[
-                  "N",
-                  props.hotTake.stats.count ?? 0,
                 ],
+                ["N", props.hotTake.stats.count ?? 0],
               ]}
             >
               {([label, text]) => (
-                <div>
+                <>
                   {label}
                   {label ? ":" : <br />} <strong>{text}</strong>
-                </div>
+                  <br />
+                </>
               )}
             </For>
-          </Collapse>
-        </div>
+          </div>
+        </Collapse>
       </div>
     </div>
   );

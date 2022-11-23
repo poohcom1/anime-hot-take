@@ -5,7 +5,10 @@ let clientCache: MongoClient | undefined;
 export function getMongoClient() {
   if (clientCache) return clientCache;
 
-  clientCache = new MongoClient(import.meta.env.VITE_MONGO_DB_URL);
+  if (!process.env.MONGODB_URL) {
+    throw new Error("MONGODB_URL not set!");
+  }
+  clientCache = new MongoClient(process.env.MONGODB_URL!);
 
   return clientCache;
 }
