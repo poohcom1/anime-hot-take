@@ -33,6 +33,10 @@ export async function GET(apiEvent: APIEvent) {
     .find({})
     .toArray()) as unknown as DBUser[];
 
+  if (process.env.NODE_ENV === "development") {
+    return json(users);
+  }
+
   const inverseDecimals = Math.pow(10, decimals);
 
   const scores = users.map(

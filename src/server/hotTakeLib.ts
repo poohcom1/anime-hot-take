@@ -1,8 +1,6 @@
 import axios from "axios";
 import { Jikan4, Mal } from "node-myanimelist";
-import { anime } from "node-myanimelist/typings/methods/jikan4";
 import {
-  sum,
   average,
   standardDeviation,
   quantileRank,
@@ -25,74 +23,93 @@ type Anime = Mal.User.AnimeListItem<
 
 const getValueDiff = (a: Anime) => a.list_status.score - (a.node.mean ?? 5);
 
-const getDiff = (a: Anime) => Math.abs(getValueDiff(a));
+const getDiff = (a: Anime) => {
+  const valueDiff = getValueDiff(a);
+  return Math.abs(valueDiff) * valueDiff > 0 ? 1.5 : 1;
+};
 
 const sortDiffs = (a: Anime, b: Anime): number => getDiff(b) - getDiff(a);
 
 const sortValueDiffs = (a: Anime, b: Anime): number =>
   getValueDiff(b) - getValueDiff(a);
 
-const getTopBiasedDiff =
-  (mult: number = 2) =>
-  (a: Anime) =>
-    Math.pow(getDiff(a), a.list_status.score === 10 ? mult : 1);
+interface CalculationResult {
+  score: number;
+  highest: AnimeSummary;
+  lowest: AnimeSummary;
+  rawData: AnimeSummaryWithScore[];
+}
+
+const bias10 = (x: number): number => Math.pow(Math.E, (1 / 20) * (x - 10));
+
+export function calculateScore(animeList: Anime[]): CalculationResult {
+  const sortedDiffData = animeList.sort(sortDiffs);
+
+  const mappedData = sortedDiffData.map(formatUserAnimeWithScore);
+
+  const sortedValueDiffData = sortedDiffData.sort(sortValueDiffs);
+
+  return {
+    score:
+      sortedDiffData.length > 0 ? average(mappedData.map((a) => a.score)) : 0,
+    lowest: formatUserAnime(sortedValueDiffData[0]),
+    highest: formatUserAnime(
+      sortedValueDiffData[sortedValueDiffData.length - 1]
+    ),
+    rawData: sortedValueDiffData.map(formatUserAnimeWithScore),
+  };
+}
 
 /**
  * Fetches the user hot take data, the mean data, and updates the database
- * @param username
+ * @param usernameQuery
  * @returns
  */
 export async function fetchAndCalculateHotTake(
-  username: string
+  usernameQuery: string
 ): Promise<Result<HotTakeResult, string>> {
   try {
     const client = await getMalClient();
 
     const user: JikanUser = (
       (await Jikan4.jikanGet(
-        `${Jikan4.jikanUrl}/users/${username}`
+        `${Jikan4.jikanUrl}/users/${usernameQuery}`
       )) as JikanUserResponse
     ).data;
 
     const list = await client.user
-      .animelist(username, Mal.Anime.fields().mean().myListStatus(), null, {
-        limit: 1000,
-        status: "completed",
-        sort: "list_score",
-      })
+      .animelist(
+        user.username,
+        Mal.Anime.fields().mean().myListStatus(),
+        null,
+        {
+          limit: 1000,
+          status: "completed",
+          sort: "list_score",
+        }
+      )
       .call();
 
     const data = list.data.filter((a) => a.list_status.score > 0);
-    const sortedDiffData = data.sort(sortDiffs);
 
-    if (sortedDiffData.length === 0) {
-      return Err("Not enough data from list 🤔, are there any actual ratings?");
-    }
-
-    // Final score
-    const score =
-      sum(sortedDiffData.map(getTopBiasedDiff())) / sortedDiffData.length;
-
-    const sortedValueDiffData = sortedDiffData.sort(sortValueDiffs);
-    const lowest = sortedValueDiffData[0];
-    const highest = sortedValueDiffData[sortedValueDiffData.length - 1];
+    const scoreResult = calculateScore(data);
 
     // Database
 
-    if (isNaN(score)) {
+    if (isNaN(scoreResult.score)) {
       return Err("Something went wrong with maths :(");
     }
 
     const doc: DBUser = {
-      _id: username,
-      score,
+      _id: user.username,
+      score: scoreResult.score,
     };
 
     const mongo = getMongoClient();
     const collection = mongo.db().collection(SCORES_COLLECTION);
 
     await collection.updateOne(
-      { _id: username },
+      { _id: user.username },
       { $set: doc },
       { upsert: true }
     );
@@ -103,7 +120,7 @@ export async function fetchAndCalculateHotTake(
 
     let allScores = allData.map((s) => s.score).filter((s) => !!s && !isNaN(s));
 
-    if (allScores.length === 0) allScores = [score];
+    if (allScores.length === 0) allScores = [scoreResult.score];
 
     // Stats
 
@@ -115,12 +132,9 @@ export async function fetchAndCalculateHotTake(
 
     return Ok(<HotTakeResult>{
       userData: {
+        ...scoreResult,
         user,
-        rawData: sortedValueDiffData.map(formatUserAnime),
-        rank: quantileRank(allScores, score),
-        score,
-        highest: formatUserAnime(highest),
-        lowest: formatUserAnime(lowest),
+        rank: quantileRank(allScores, scoreResult.score),
       },
       stats: {
         min: min(allScores),
@@ -147,4 +161,10 @@ const formatUserAnime = (anime: Anime): AnimeSummary => ({
   image: anime.node.main_picture?.medium ?? "",
   userScore: anime.list_status.score,
   meanScore: anime.node.mean ?? 5,
+  id: anime.node.id,
+});
+
+const formatUserAnimeWithScore = (anime: Anime): AnimeSummaryWithScore => ({
+  score: getDiff(anime),
+  ...formatUserAnime(anime),
 });

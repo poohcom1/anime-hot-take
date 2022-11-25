@@ -1,12 +1,10 @@
-#!/usr/bin/env tsx
-import dotenv from "dotenv";
+#!/usr/bin/env -S npx dotenv tsx
+import { cursorTo } from "readline";
 import {
   fetchAndCalculateHotTake,
   SCORES_COLLECTION,
 } from "~/server/hotTakeLib";
 import { getMongoClient } from "~/server/mongodb";
-
-dotenv.config();
 
 const mongoClient = getMongoClient();
 
@@ -20,15 +18,16 @@ const users = (await mongoClient
 
 let count = 0;
 
-console.log(`Updating ${users.length} entries...`);
+console.log(`Updating ${users.length} entries:`);
 
 for (const user of users) {
   const res = await fetchAndCalculateHotTake(user._id);
   if (res.ok) {
     count++;
-    console.log(` > Updated ${count}/${users.length}`);
-  } else {
-    console.error(`[error] ${res.err}`);
+    cursorTo(process.stdout, 0);
+    process.stdout.write(
+      ` > Updated ${((count / users.length) * 100).toFixed()}%`
+    );
   }
 }
 

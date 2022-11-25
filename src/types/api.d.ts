@@ -17,10 +17,15 @@ interface JikanUserResponse {
 }
 
 interface AnimeSummary {
+  id: number;
   userScore: number;
   meanScore: number;
   image: string;
   title: string;
+}
+
+interface AnimeSummaryWithScore extends AnimeSummary {
+  score: number;
 }
 
 interface HotTakeResult {

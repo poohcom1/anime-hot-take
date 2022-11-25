@@ -20,8 +20,6 @@ interface Rank {
   color: string;
 }
 
-const DEVIATIONS = 5;
-
 const RANKS: Rank[] = [
   {
     name: "Soulless",
@@ -34,8 +32,8 @@ const RANKS: Rank[] = [
     color: "#620cb7",
   },
   {
-    name: "Normie",
-    description: "Gets their tastes from reddit",
+    name: "Redditor",
+    description: "Thanks for the gold kind stran-",
     color: "#ffff39",
   },
   {
@@ -63,8 +61,8 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
   const mean = props.hotTake.stats.mean ?? 0;
   const stdDev = props.hotTake.stats.standardDeviation ?? 0;
 
-  const start = mean - (stdDev * DEVIATIONS) / 2;
-  const end = mean + (stdDev * DEVIATIONS) / 2;
+  const start = mean - (stdDev * RANKS.length) / 2;
+  const end = mean + (stdDev * RANKS.length) / 2;
 
   const percent = inverseLerp(start, end, score);
 
@@ -87,7 +85,7 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
   const rank =
     RANKS[
       clamp(
-        Math.floor((score - mean) / stdDev + DEVIATIONS / 2),
+        Math.floor((score - mean) / stdDev + RANKS.length / 2),
         0,
         RANKS.length - 1
       )
@@ -273,7 +271,7 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
               Hot meter: {(percentDisplay() * 100).toFixed(1) + "%"}
             </p>
             <GradientProgress
-              percent={percent}
+              percent={Math.min(1, percent)}
               width={1000}
               animTime={ANIM_TIME}
             />
@@ -306,9 +304,19 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
                             </Match>
                           </Switch>
                         </span>
-                        {anime.title}
+                        <a
+                          href={`https://myanimelist.net/anime/${anime.id}`}
+                          target="_blank"
+                        >
+                          {anime.title}
+                        </a>
                       </h4>
-                      <img src={anime.image} height="200px" />
+                      <a
+                        href={`https://myanimelist.net/anime/${anime.id}`}
+                        target="_blank"
+                      >
+                        <img src={anime.image} height="200px" />
+                      </a>
                       <div class="hottest-anime__scores">
                         <div>
                           User Score: <strong>{anime.userScore}/10</strong>

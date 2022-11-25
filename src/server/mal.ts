@@ -21,3 +21,16 @@ export async function getMalClient(): Promise<Mal.MalAcount> {
 
   return account;
 }
+
+export async function getUserAnimelist(user: string) {
+  const client = await getMalClient();
+  const list = client.user
+    .animelist(user, Mal.Anime.fields().mean().myListStatus(), null, {
+      limit: 1000,
+      status: "completed",
+      sort: "list_score",
+    })
+    .call();
+
+  return list;
+}
