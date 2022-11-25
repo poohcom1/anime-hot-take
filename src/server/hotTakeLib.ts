@@ -12,6 +12,8 @@ import { getMalClient } from "./mal";
 import { getMongoClient } from "./mongodb";
 
 export const SCORES_COLLECTION = "scores";
+const POSITIVE_BIAS = 2;
+const NEGATIVE_BIAS = 1;
 
 type Anime = Mal.User.AnimeListItem<
   Mal.Common.WorkBase &
@@ -25,7 +27,7 @@ const getValueDiff = (a: Anime) => a.list_status.score - (a.node.mean ?? 5);
 
 const getDiff = (a: Anime) => {
   const valueDiff = getValueDiff(a);
-  return Math.abs(valueDiff) * valueDiff > 0 ? 1.5 : 1;
+  return Math.abs(valueDiff) * valueDiff > 0 ? POSITIVE_BIAS : NEGATIVE_BIAS;
 };
 
 const sortDiffs = (a: Anime, b: Anime): number => getDiff(b) - getDiff(a);
