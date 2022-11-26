@@ -27,7 +27,7 @@ const getValueDiff = (a: Anime) => a.list_status.score - (a.node.mean ?? 5);
 
 const getDiff = (a: Anime) => {
   const valueDiff = getValueDiff(a);
-  return Math.abs(valueDiff) * valueDiff > 0 ? POSITIVE_BIAS : NEGATIVE_BIAS;
+  return Math.abs(valueDiff) * (valueDiff > 0 ? POSITIVE_BIAS : NEGATIVE_BIAS);
 };
 
 const sortDiffs = (a: Anime, b: Anime): number => getDiff(b) - getDiff(a);
