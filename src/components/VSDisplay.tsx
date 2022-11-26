@@ -1,8 +1,10 @@
-import { Show } from "solid-js";
+import { createMemo, Show } from "solid-js";
 import { css } from "solid-styled";
 import DisagreementImage from "~/assets/disagreements.png";
 import AgreementImage from "~/assets/agreements.png";
 import { PropAliases } from "solid-js/web";
+import InfoPane from "./InfoPane";
+import { formatNumber, formatText, objectToArray, omit } from "~/utils/object";
 
 interface VSDisplayProps {
   ref?: HTMLDivElement;
@@ -10,6 +12,37 @@ interface VSDisplayProps {
 }
 
 export default function VSDisplay(props: VSDisplayProps) {
+  console.table(props.data.anime);
+
+  const user1Fav = props.data.anime.find((a) => a.userScore > a.userScore2);
+  const user2Fav = props.data.anime.find((a) => a.userScore2 > a.userScore);
+
+  const rest = props.data.anime.filter(
+    (a) => ![user1Fav?.id, user2Fav?.id].includes(a.id)
+  );
+
+  const reversed = [...props.data.anime]
+    .filter((a) => !rest.slice(0, 5).find((b) => a.id === b.id))
+    .sort((a, b) => b.userScore - a.userScore);
+
+  reversed.sort(
+    (a, b) =>
+      Math.abs(a.userScore - a.userScore2) -
+      Math.abs(b.userScore - b.userScore2)
+  );
+
+  console.log(`Compatability: ${(props.data.compatibility * 100).toFixed(2)}%`);
+
+  const animeArr = createMemo(() =>
+    objectToArray(
+      props.data.anime.map((a) => omit(a, ["image", "meanScore", "id"])),
+      (key) =>
+        formatText(key)
+          .replace("UserScore2", props.data.user2.username)
+          .replace("UserScore", props.data.user1.username)
+    )
+  );
+
   css`
     .header {
       margin: 0;
@@ -39,6 +72,15 @@ export default function VSDisplay(props: VSDisplayProps) {
       flex: 1 1;
     }
 
+    /* Table */
+    th,
+    td {
+      padding: 4px;
+    }
+    tr:nth-child(odd) {
+      background-color: #d6eeee11;
+    }
+
     @media only screen and (max-width: 768px) {
       .row,
       .inner-row {
@@ -46,25 +88,6 @@ export default function VSDisplay(props: VSDisplayProps) {
       }
     }
   `;
-
-  console.table(props.data.anime);
-
-  const user1Fav = props.data.anime.find((a) => a.userScore > a.userScore2);
-  const user2Fav = props.data.anime.find((a) => a.userScore2 > a.userScore);
-
-  const rest = props.data.anime.filter(
-    (a) => ![user1Fav?.id, user2Fav?.id].includes(a.id)
-  );
-
-  const reversed = [...props.data.anime]
-    .filter((a) => !rest.slice(0, 5).find((b) => a.id === b.id))
-    .sort((a, b) => b.userScore - a.userScore);
-
-  reversed.sort(
-    (a, b) =>
-      Math.abs(a.userScore - a.userScore2) -
-      Math.abs(b.userScore - b.userScore2)
-  );
 
   return (
     <div ref={props.ref} style={{ width: "100%", padding: "32px" }}>
@@ -130,6 +153,20 @@ export default function VSDisplay(props: VSDisplayProps) {
         </div>
         <div class="row-padding" />
       </div>
+      <InfoPane>
+        {" "}
+        <table style={{ margin: "auto" }}>
+          <tbody>
+            {animeArr().map((row, index) => (
+              <tr>
+                {row.map((v) =>
+                  index === 0 ? <th>{v}</th> : <td>{formatNumber(v, 0)}</td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </InfoPane>
     </div>
   );
 }

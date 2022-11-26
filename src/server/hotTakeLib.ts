@@ -193,12 +193,14 @@ export async function fetchAndCompareUsers(
       }
     }
 
+    // Sort by most highest average scores
     commonAnime.sort(
       (a, b) =>
         Math.max(b.userScore1, b.userScore1) -
         Math.max(a.userScore1, a.userScore2)
     );
 
+    // Sort by highest differences
     commonAnime.sort(
       (a, b) =>
         Math.abs(b.userScore1 - b.userScore2) -
@@ -215,6 +217,13 @@ export async function fetchAndCompareUsers(
       ),
       user1: userRes1.data,
       user2: userRes2.data,
+      compatibility:
+        1 -
+        commonAnime.reduce(
+          (pre, cur) => pre + Math.abs(cur.userScore1 - cur.userScore2),
+          0
+        ) /
+          (commonAnime.length * 10),
     });
   } catch (e) {
     if (axios.isAxiosError(e)) {

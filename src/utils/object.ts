@@ -63,3 +63,10 @@ export function formatText(text: string): string {
   const capitalized = spaced.charAt(0).toLocaleUpperCase() + text.slice(1);
   return capitalized;
 }
+
+export function formatNumber(x: number | string, dec = 1): string {
+  if (typeof x === "number") {
+    return x.toFixed(dec);
+  }
+  return x;
+}

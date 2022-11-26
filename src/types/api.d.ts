@@ -63,6 +63,7 @@ interface VsResult {
   anime: VSAnime[];
   user1: JikanUser;
   user2: JikanUser;
+  compatibility: number;
 }
 
 interface DBUser {

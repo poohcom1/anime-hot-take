@@ -3,7 +3,6 @@ import { css } from "solid-styled";
 import { Collapse } from "solid-collapse";
 import ease from "easy-ease";
 import {
-  FaSolidCircleInfo as InfoCircle,
   FaSolidStar as StarIcon,
   FaSolidThumbsDown as DislikeIcon,
 } from "solid-icons/fa";
@@ -11,8 +10,14 @@ import { clamp, inverseLerp } from "~/utils/math";
 import Delay from "./Delay";
 import GradientProgress from "./GradientProgress";
 
-import style from "./HotTakeDisplay.module.css";
-import { formatText, objectToArray, omit, takePingPong } from "~/utils/object";
+import {
+  formatNumber,
+  formatText,
+  objectToArray,
+  omit,
+  takePingPong,
+} from "~/utils/object";
+import InfoPane from "./InfoPane";
 
 interface Rank {
   name: string;
@@ -65,22 +70,6 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
   const end = mean + (stdDev * RANKS.length) / 2;
 
   const percent = inverseLerp(start, end, score);
-
-  // Animation
-  const [showInfo, setShowInfo] = createSignal(false);
-  const toggleInfo = () => {
-    const show = showInfo();
-    setShowInfo(!showInfo());
-    if (!show) {
-      setTimeout(
-        () =>
-          document
-            .querySelector(".info-text")
-            ?.scrollIntoView({ behavior: "smooth" }),
-        300
-      );
-    }
-  };
 
   const rank =
     RANKS[
@@ -167,37 +156,6 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
 
     .separator {
       margin: 0 32px;
-    }
-
-    .info-section {
-      width: 80vw;
-      margin: 16px auto;
-      color: gray;
-      overflow: hidden;
-      border-radius: 8px;
-      background-color: ${showInfo() ? "#ffffff0a" : "transparent"};
-    }
-
-    .info-section-toggle {
-      padding: 16px;
-      display: flex;
-      justify-content: start;
-      align-items: center;
-      transition: background-color 0.2s;
-    }
-
-    .info-section-toggle:hover {
-      background-color: #ffffff22;
-    }
-
-    .info-text {
-      margin: 0;
-      padding: 16px;
-      text-align: left;
-    }
-
-    .info-text > p {
-      margin: 4px 0;
     }
 
     /* Table */
@@ -344,72 +302,57 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
         </div>
       </div>
       {/* Info */}
-      <div class="info-section">
-        <div class="info-section-toggle" onClick={toggleInfo}>
-          <InfoCircle style={{ "margin-left": "0px" }} />
-          <span style={{ "margin-left": "8px", "user-select": "none" }}>
-            More Info
-          </span>
+      <InfoPane>
+        <div class="info-text">
+          <p>
+            Ranking score is calculated from the difference between your anime
+            score and anime's average rating. Higher score are weighted higher,
+            as hating on a popular show isn't as much of a hot take as loving a
+            hated show.
+          </p>
+          <br />
+          <For
+            each={[
+              ["User Raw Score", props.hotTake.userData.score?.toFixed(2)],
+              [
+                "User Percentile",
+                ((props.hotTake.userData.rank ?? 0) * 100).toFixed(0) + "%",
+              ],
+              ["Data points", props.hotTake.userData.rawData.length],
+              [],
+              ["Mean Score", props.hotTake.stats.mean?.toFixed(2)],
+              ["Min Score", props.hotTake.stats.min?.toFixed(2)],
+              ["Max Score", props.hotTake.stats.max?.toFixed(2)],
+              [
+                "Standard Deviation",
+                props.hotTake.stats.standardDeviation?.toFixed(2),
+              ],
+              ["N", props.hotTake.stats.count ?? 0],
+            ]}
+          >
+            {([label, text]) => (
+              <>
+                {label}
+                {label ? ":" : <br />} <strong>{text}</strong>
+                <br />
+              </>
+            )}
+          </For>
         </div>
-        <Collapse value={showInfo()} class={`${style.infoCollapse}`}>
-          <div class="info-text">
-            <p>
-              Ranking score is calculated from the difference between your anime
-              score and anime's average rating. Higher score are weighted
-              higher, as hating on a popular show isn't as much of a hot take as
-              loving a hated show.
-            </p>
-            <br />
-            <For
-              each={[
-                ["User Raw Score", props.hotTake.userData.score?.toFixed(2)],
-                [
-                  "User Percentile",
-                  ((props.hotTake.userData.rank ?? 0) * 100).toFixed(0) + "%",
-                ],
-                ["Data points", props.hotTake.userData.rawData.length],
-                [],
-                ["Mean Score", props.hotTake.stats.mean?.toFixed(2)],
-                ["Min Score", props.hotTake.stats.min?.toFixed(2)],
-                ["Max Score", props.hotTake.stats.max?.toFixed(2)],
-                [
-                  "Standard Deviation",
-                  props.hotTake.stats.standardDeviation?.toFixed(2),
-                ],
-                ["N", props.hotTake.stats.count ?? 0],
-              ]}
-            >
-              {([label, text]) => (
-                <>
-                  {label}
-                  {label ? ":" : <br />} <strong>{text}</strong>
-                  <br />
-                </>
-              )}
-            </For>
-          </div>
-          <div>
-            <table style={{ margin: "auto" }}>
-              <tbody>
-                {table().map((row, index) => (
-                  <tr>
-                    {row.map((v) =>
-                      index === 0 ? <th>{v}</th> : <td>{formatNumber(v)}</td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Collapse>
-      </div>
+        <div>
+          <table style={{ margin: "auto" }}>
+            <tbody>
+              {table().map((row, index) => (
+                <tr>
+                  {row.map((v) =>
+                    index === 0 ? <th>{v}</th> : <td>{formatNumber(v)}</td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </InfoPane>
     </div>
   );
-}
-
-function formatNumber(x: number | string): string {
-  if (typeof x === "number") {
-    return x.toFixed(1);
-  }
-  return x;
 }
