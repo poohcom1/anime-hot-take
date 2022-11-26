@@ -1,4 +1,4 @@
-import { createSignal, For, Match, Switch } from "solid-js";
+import { createMemo, createSignal, For, Match, Switch } from "solid-js";
 import { css } from "solid-styled";
 import { Collapse } from "solid-collapse";
 import ease from "easy-ease";
@@ -12,7 +12,7 @@ import Delay from "./Delay";
 import GradientProgress from "./GradientProgress";
 
 import style from "./HotTakeDisplay.module.css";
-import { takePingPong } from "~/utils/object";
+import { formatText, objectToArray, omit, takePingPong } from "~/utils/object";
 
 interface Rank {
   name: string;
@@ -192,7 +192,7 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
 
     .info-text {
       margin: 0;
-      padding: 8px;
+      padding: 16px;
       text-align: left;
     }
 
@@ -208,6 +208,15 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
 
     a:hover {
       text-decoration: underline;
+    }
+
+    /* Table */
+    th,
+    td {
+      padding: 4px;
+    }
+    tr:nth-child(odd) {
+      background-color: #d6eeee22;
     }
 
     @media only screen and (max-width: 1000px) {
@@ -230,7 +239,17 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
     }
   `;
 
-  console.table(props.hotTake.userData.rawData);
+  // Debug
+  const rawData = [...props.hotTake.userData.rawData];
+
+  rawData.sort((a, b) => b.score - a.score);
+
+  const table = createMemo(() =>
+    objectToArray(
+      rawData.map((d) => omit(d, ["image", "id"])),
+      formatText
+    )
+  );
 
   return (
     <div id={props.id} ref={props.ref}>
@@ -377,8 +396,28 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
               )}
             </For>
           </div>
+          <div>
+            <table style={{ margin: "auto" }}>
+              <tbody>
+                {table().map((row, index) => (
+                  <tr>
+                    {row.map((v) =>
+                      index === 0 ? <th>{v}</th> : <td>{formatNumber(v)}</td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Collapse>
       </div>
     </div>
   );
+}
+
+function formatNumber(x: number | string): string {
+  if (typeof x === "number") {
+    return x.toFixed(1);
+  }
+  return x;
 }

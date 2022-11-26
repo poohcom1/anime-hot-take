@@ -26,12 +26,13 @@ interface AnimeSummary {
 
 interface AnimeSummaryWithScore extends AnimeSummary {
   score: number;
+  weightedScore: number;
 }
 
 interface HotTakeResult {
   userData: {
     user: JikanUser;
-    rawData: AnimeSummary[];
+    rawData: AnimeSummaryWithScore[];
     score: number;
     rank: number;
     highest: AnimeSummary;
@@ -43,6 +44,8 @@ interface HotTakeResult {
     mean: number | null;
     standardDeviation: number | null;
     count: number | null;
+    positiveBias: number;
+    negativeBias: number;
   };
 }
 

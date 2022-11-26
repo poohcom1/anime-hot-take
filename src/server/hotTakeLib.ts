@@ -6,43 +6,15 @@ import {
   quantileRank,
   min,
   max,
+  median,
 } from "simple-statistics";
 import { Err, Ok } from "~/types/monads";
+import { weightedAverage } from "~/utils/math";
 import { getMalClient } from "./mal";
 import { getMongoClient } from "./mongodb";
 
-export const SCORES_COLLECTION = "scores";
-const POSITIVE_BIAS = 2;
-const NEGATIVE_BIAS = 1;
-
-type Anime = Mal.User.AnimeListItem<
-  Mal.Common.WorkBase &
-    Mal.Common.WorkForList.Mean & {
-      my_list_status: Mal.Anime.AnimeListStatusBase;
-    },
-  Mal.Anime.AnimeListStatusBase
->;
-
-const getValueDiff = (a: Anime) => a.list_status.score - (a.node.mean ?? 5);
-
-const getDiff = (a: Anime) => {
-  const valueDiff = getValueDiff(a);
-  return Math.abs(valueDiff) * (valueDiff > 0 ? POSITIVE_BIAS : NEGATIVE_BIAS);
-};
-
-const sortDiffs = (a: Anime, b: Anime): number => getDiff(b) - getDiff(a);
-
-const sortValueDiffs = (a: Anime, b: Anime): number =>
-  getValueDiff(b) - getValueDiff(a);
-
-interface CalculationResult {
-  score: number;
-  highest: AnimeSummary;
-  lowest: AnimeSummary;
-  rawData: AnimeSummaryWithScore[];
-}
-
-const bias10 = (x: number): number => Math.pow(Math.E, (1 / 20) * (x - 10));
+// Main calculations
+const getDiff = (a: Anime) => Math.abs(getValueDiff(a));
 
 export function calculateScore(animeList: Anime[]): CalculationResult {
   const sortedDiffData = animeList.sort(sortDiffs);
@@ -52,8 +24,7 @@ export function calculateScore(animeList: Anime[]): CalculationResult {
   const sortedValueDiffData = sortedDiffData.sort(sortValueDiffs);
 
   return {
-    score:
-      sortedDiffData.length > 0 ? average(mappedData.map((a) => a.score)) : 0,
+    score: weightedAverage(mappedData.map((s) => [s.score, s.userScore])),
     lowest: formatUserAnime(sortedValueDiffData[0]),
     highest: formatUserAnime(
       sortedValueDiffData[sortedValueDiffData.length - 1]
@@ -126,7 +97,7 @@ export async function fetchAndCalculateHotTake(
 
     // Stats
 
-    const mean = average(allScores);
+    const mean = median(allScores);
 
     const stdDev = standardDeviation(allScores);
 
@@ -158,6 +129,32 @@ export async function fetchAndCalculateHotTake(
   }
 }
 
+// Misc
+export const SCORES_COLLECTION = "scores";
+
+type Anime = Mal.User.AnimeListItem<
+  Mal.Common.WorkBase &
+    Mal.Common.WorkForList.Mean & {
+      my_list_status: Mal.Anime.AnimeListStatusBase;
+    },
+  Mal.Anime.AnimeListStatusBase
+>;
+
+const getValueDiff = (a: Anime) => a.list_status.score - (a.node.mean ?? 5);
+
+export const sortDiffs = (a: Anime, b: Anime): number =>
+  getDiff(b) - getDiff(a);
+
+const sortValueDiffs = (a: Anime, b: Anime): number =>
+  getValueDiff(b) - getValueDiff(a);
+
+interface CalculationResult {
+  score: number;
+  highest: AnimeSummary;
+  lowest: AnimeSummary;
+  rawData: AnimeSummaryWithScore[];
+}
+
 const formatUserAnime = (anime: Anime): AnimeSummary => ({
   title: anime.node.title,
   image: anime.node.main_picture?.medium ?? "",
@@ -168,5 +165,6 @@ const formatUserAnime = (anime: Anime): AnimeSummary => ({
 
 const formatUserAnimeWithScore = (anime: Anime): AnimeSummaryWithScore => ({
   score: getDiff(anime),
+  weightedScore: getDiff(anime) * anime.list_status.score,
   ...formatUserAnime(anime),
 });

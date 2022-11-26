@@ -1,4 +1,4 @@
-import { clamp } from "./math";
+import { clamp, weightedAverage } from "./math";
 
 describe("utils > math", () => {
   describe("clamp", () => {
@@ -28,6 +28,19 @@ describe("utils > math", () => {
 
     it("should clamp NaN to middle value", () => {
       expect(clamp(NaN, 1, 5)).toStrictEqual(3);
+    });
+  });
+
+  describe("weightedAverage", () => {
+    test("1", () => {
+      expect(
+        weightedAverage([
+          [5, 5],
+          [1, 1],
+          [1, 1],
+          [1, 1],
+        ])
+      ).toStrictEqual(3.5);
     });
   });
 });

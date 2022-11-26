@@ -13,3 +13,12 @@ export function clamp(val: number, min: number, max: number): number {
 
   return Math.min(Math.max(val, min), max);
 }
+
+export function weightedAverage(data: [number, number][]): number {
+  if (data.length === 0) return 0;
+
+  return (
+    data.reduce((pre, [cur, weight]) => pre + cur * weight, 0) /
+    data.reduce((pre, [, weight]) => pre + weight, 0)
+  );
+}
