@@ -1,3 +1,5 @@
+// Third-party API
+
 interface JikanUser {
   url: string;
   username: string;
@@ -16,6 +18,17 @@ interface JikanUserResponse {
   data: JikanUser;
 }
 
+// Internal API
+
+interface HotTakeUserData {
+  user: JikanUser;
+  rawData: AnimeSummaryWithScore[];
+  score: number;
+  rank: number;
+  highest: AnimeSummary;
+  lowest: AnimeSummary;
+}
+
 interface AnimeSummary {
   id: number;
   userScore: number;
@@ -30,14 +43,7 @@ interface AnimeSummaryWithScore extends AnimeSummary {
 }
 
 interface HotTakeResult {
-  userData: {
-    user: JikanUser;
-    rawData: AnimeSummaryWithScore[];
-    score: number;
-    rank: number;
-    highest: AnimeSummary;
-    lowest: AnimeSummary;
-  };
+  userData: HotTakeUserData;
   stats: {
     min: number | null;
     max: number | null;
@@ -47,6 +53,16 @@ interface HotTakeResult {
     positiveBias: number;
     negativeBias: number;
   };
+}
+
+interface VSAnime extends AnimeSummary {
+  userScore2: number;
+}
+
+interface VsResult {
+  anime: VSAnime[];
+  user1: JikanUser;
+  user2: JikanUser;
 }
 
 interface DBUser {

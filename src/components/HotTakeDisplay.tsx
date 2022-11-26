@@ -200,16 +200,6 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
       margin: 4px 0;
     }
 
-    a {
-      color: white;
-      text-decoration: none;
-      margin: 0;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
     /* Table */
     th,
     td {
@@ -242,7 +232,7 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
   // Debug
   const rawData = [...props.hotTake.userData.rawData];
 
-  rawData.sort((a, b) => b.score - a.score);
+  rawData.sort((a, b) => b.weightedScore - a.weightedScore);
 
   const table = createMemo(() =>
     objectToArray(
@@ -364,8 +354,10 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
         <Collapse value={showInfo()} class={`${style.infoCollapse}`}>
           <div class="info-text">
             <p>
-              Ranking is calculated by average difference between your top anime
-              scores and said anime's mean rating.
+              Ranking score is calculated from the difference between your anime
+              score and anime's average rating. Higher score are weighted
+              higher, as hating on a popular show isn't as much of a hot take as
+              loving a hated show.
             </p>
             <br />
             <For

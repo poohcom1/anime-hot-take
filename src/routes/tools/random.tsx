@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 import server$ from "solid-start/server";
 import { fetchAndCalculateHotTake } from "~/server/hotTakeLib";
-import { randomUser } from "./api/hot-take";
+import { randomUser } from "../api/hot-take";
 
 export default function Index() {
   const [state, setState] = createSignal<"none" | "user" | "take">("none");

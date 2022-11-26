@@ -1,7 +1,7 @@
 import { createResource, Show } from "solid-js";
 import { unstable_clientOnly } from "solid-start";
 import { css } from "solid-styled";
-import type { StatsResponse } from "./api/stats";
+import type { StatsResponse } from "../api/stats";
 // const Histogram = unstable_clientOnly(
 //   async () => await import("~/components/Histogram")
 // );

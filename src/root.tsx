@@ -34,7 +34,13 @@ function GlobalStyles() {
       }
 
       a {
-        margin-right: 1rem;
+        color: white;
+        text-decoration: none;
+        margin: 0;
+      }
+
+      a:hover {
+        text-decoration: underline;
       }
 
       main {

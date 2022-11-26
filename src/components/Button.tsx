@@ -1,25 +1,38 @@
-import { children, JSX } from "solid-js";
+import { JSX, JSXElement, mergeProps } from "solid-js";
 import { css } from "solid-styled";
+import Color from "color";
 
-export default function Button(
-  props: JSX.ButtonHTMLAttributes<HTMLButtonElement>
-) {
+interface ButtonProps {
+  class?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  color?: string;
+  width?: string;
+  children?: JSXElement;
+}
+
+export default function Button(baseProps: ButtonProps) {
+  const props = mergeProps({ color: "#96106a" }, baseProps);
+
   css`
     button {
+      margin: 16px;
       border: none;
       border-radius: 4px;
       color: white;
       padding: 8px 16px;
+      width: ${props.width ?? ""};
 
-      background-color: #96106a;
+      background-color: ${Color(props.color).toString()};
+      transition: background-color 0.2s, width 0.2s;
     }
 
     button:hover {
-      background-color: #690c4a;
+      background-color: ${Color(props.color).darken(0.2).toString()};
     }
 
     button:active {
-      background-color: #510839;
+      background-color: ${Color(props.color).darken(0.5).toString()};
     }
 
     button:disabled {
