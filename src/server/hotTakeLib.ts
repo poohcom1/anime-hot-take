@@ -193,7 +193,11 @@ export async function fetchAndCompareUsers(
       }
     }
 
-    commonAnime.sort((a, b) => b.userScore1 - a.userScore1);
+    commonAnime.sort(
+      (a, b) =>
+        Math.max(b.userScore1, b.userScore1) -
+        Math.max(a.userScore1, a.userScore2)
+    );
 
     commonAnime.sort(
       (a, b) =>

@@ -47,6 +47,8 @@ export default function VSDisplay(props: VSDisplayProps) {
     }
   `;
 
+  console.table(props.data.anime);
+
   const user1Fav = props.data.anime.find((a) => a.userScore > a.userScore2);
   const user2Fav = props.data.anime.find((a) => a.userScore2 > a.userScore);
 
@@ -63,8 +65,6 @@ export default function VSDisplay(props: VSDisplayProps) {
       Math.abs(a.userScore - a.userScore2) -
       Math.abs(b.userScore - b.userScore2)
   );
-
-  console.table(reversed);
 
   return (
     <div ref={props.ref} style={{ width: "100%", padding: "32px" }}>
