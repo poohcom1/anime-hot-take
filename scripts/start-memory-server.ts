@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { calculateScore, SCORES_COLLECTION } from "~/server/hotTakeLib";
+import { calculateScore, SCORES_COLLECTION } from "~/server/calculations";
 import type { AnimeList } from "~/server/mal";
 import { MongoClient, OptionalId } from "mongodb";
 

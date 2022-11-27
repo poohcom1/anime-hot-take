@@ -1,6 +1,6 @@
 import { APIEvent, json } from "solid-start";
 import URL from "url";
-import { SCORES_COLLECTION } from "~/server/hotTakeLib";
+import { SCORES_COLLECTION } from "~/server/calculations";
 import { getMongoClient } from "~/server/mongodb";
 
 export interface StatsResponse {

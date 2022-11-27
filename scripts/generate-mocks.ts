@@ -3,6 +3,7 @@ import fs from "fs";
 import { cursorTo } from "readline";
 import { Mal } from "node-myanimelist";
 import { getMalClient } from "~/server/mal";
+import { ANIMELIST_OPTIONS } from "~/server/calculations";
 
 const OUTPUT = "scripts/mock_data.json";
 
@@ -19,11 +20,12 @@ console.log(`Create mock data for ${data.length} users...`);
 for (let i = 0; i < data.length; i++) {
   const user = data[i];
   const list = await client.user
-    .animelist(user, Mal.Anime.fields().mean().myListStatus(), null, {
-      limit: 1000,
-      status: "completed",
-      sort: "list_score",
-    })
+    .animelist(
+      user,
+      Mal.Anime.fields().mean().myListStatus(),
+      null,
+      ANIMELIST_OPTIONS
+    )
     .call();
 
   animeLists[user] = list;

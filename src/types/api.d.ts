@@ -39,7 +39,6 @@ interface AnimeSummary {
 
 interface AnimeSummaryWithScore extends AnimeSummary {
   score: number;
-  weightedScore: number;
 }
 
 interface HotTakeResult {

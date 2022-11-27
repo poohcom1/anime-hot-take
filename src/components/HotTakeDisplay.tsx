@@ -190,7 +190,7 @@ export default function HotTakeDisplay(props: HotTakeDisplayProps) {
   // Debug
   const rawData = [...props.hotTake.userData.rawData];
 
-  rawData.sort((a, b) => b.weightedScore - a.weightedScore);
+  rawData.sort((a, b) => b.score - a.score);
 
   const table = createMemo(() =>
     objectToArray(

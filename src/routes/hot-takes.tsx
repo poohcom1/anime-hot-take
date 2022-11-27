@@ -17,7 +17,7 @@ import NotFoundImage from "~/assets/404_zetsubou_sayonara.jpg";
 import {
   fetchAndCalculateHotTake,
   fetchAndCompareUsers,
-} from "~/server/hotTakeLib";
+} from "~/server/calculations";
 import Delay from "~/components/Delay";
 import { Err } from "~/types/monads";
 import VSDisplay from "~/components/VSDisplay";

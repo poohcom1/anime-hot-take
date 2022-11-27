@@ -3,7 +3,7 @@ import { cursorTo } from "readline";
 import {
   fetchAndCalculateHotTake,
   SCORES_COLLECTION,
-} from "~/server/hotTakeLib";
+} from "~/server/calculations";
 import { getMongoClient } from "~/server/mongodb";
 
 const mongoClient = getMongoClient();

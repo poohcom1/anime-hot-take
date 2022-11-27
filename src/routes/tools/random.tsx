@@ -7,7 +7,7 @@ import {
   Switch,
 } from "solid-js";
 import server$ from "solid-start/server";
-import { fetchAndCalculateHotTake } from "~/server/hotTakeLib";
+import { fetchAndCalculateHotTake } from "~/server/calculations";
 import { randomUser } from "../api/hot-take";
 
 export default function Index() {

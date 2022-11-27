@@ -1,6 +1,6 @@
 import { APIEvent, json } from "solid-start";
 import URL from "url";
-import { fetchAndCalculateHotTake } from "~/server/hotTakeLib";
+import { fetchAndCalculateHotTake } from "~/server/calculations";
 
 // API
 

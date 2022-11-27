@@ -9,13 +9,30 @@ import {
   median,
 } from "simple-statistics";
 import { Err, Ok } from "~/types/monads";
-import { weightedAverage } from "~/utils/math";
 import { getMalClient } from "./mal";
 import { getMongoClient } from "./mongodb";
 
-// Main calculations
-const getDiff = (a: MalAnime) => Math.abs(getValueDiff(a));
+// Configs
+export const ANIMELIST_OPTIONS = {
+  limit: 1000,
+  status: "completed",
+  sort: "list_score",
+};
 
+// Calculations
+const isPositiveScore = (a: MalAnime) =>
+  a.list_status.score > (a.node.mean ?? 5);
+
+const getAbsDiff = (a: MalAnime) => Math.abs(getValueDiff(a));
+const getPowDiff = (a: MalAnime) => Math.pow(getValueDiff(a), 2);
+const getScore = (a: MalAnime) =>
+  isPositiveScore(a) ? getPowDiff(a) : getAbsDiff(a);
+
+/**
+ * Main score calculator
+ * @param animeList
+ * @returns
+ */
 export function calculateScore(animeList: MalAnime[]): CalculationResult {
   const sortedDiffData = animeList.sort(sortDiffs);
 
@@ -24,7 +41,7 @@ export function calculateScore(animeList: MalAnime[]): CalculationResult {
   const sortedBySignedDiff = sortedDiffData.sort(sortValueDiffs);
 
   return {
-    score: weightedAverage(mappedData.map((s) => [s.score, s.weightedScore])),
+    score: average(mappedData.map((s) => s.score)),
     lowest: formatUserAnime(sortedBySignedDiff[0]),
     highest: formatUserAnime(sortedBySignedDiff[sortedBySignedDiff.length - 1]),
     rawData: sortedBySignedDiff.map(formatUserAnimeWithScore),
@@ -32,11 +49,6 @@ export function calculateScore(animeList: MalAnime[]): CalculationResult {
 }
 
 // API
-const ANIMELIST_OPTIONS = {
-  limit: 1000,
-  status: "completed",
-  sort: "list_score",
-};
 
 /**
  * Fetches the user hot take data, the mean data, and updates the database
@@ -251,7 +263,7 @@ type MalAnime = Mal.User.AnimeListItem<
 const getValueDiff = (a: MalAnime) => a.list_status.score - (a.node.mean ?? 5);
 
 export const sortDiffs = (a: MalAnime, b: MalAnime): number =>
-  getDiff(b) - getDiff(a);
+  getScore(b) - getScore(a);
 
 const sortValueDiffs = (a: MalAnime, b: MalAnime): number =>
   getValueDiff(b) - getValueDiff(a);
@@ -272,8 +284,6 @@ const formatUserAnime = (anime: MalAnime): AnimeSummary => ({
 });
 
 const formatUserAnimeWithScore = (anime: MalAnime): AnimeSummaryWithScore => ({
-  score: getDiff(anime),
-  weightedScore:
-    getDiff(anime) * (anime.list_status.score - (anime.node.mean ?? 5) + 10),
+  score: getScore(anime),
   ...formatUserAnime(anime),
 });
