@@ -23,14 +23,10 @@ where $r$ is a user's rating and $\mu$ is the mean rating.
 However, this tends to favor those with negative scores, as most anime users seem to over rate their shows. For example, Sword Art Online currently has a score of 7.2 on MAL. Due to the show's reputation, it would not be surprisingly for many to give is a score of 1~3. I would not consider this a hot take. On the flip side, giving a hated show a good score _feels_ a lot more like a hot take. As such, the calculation has been adjusted to favor _positive_ scores:
 
 $$
-
-score =
-\begin{dcases}
+score = \begin{dcases}
   r > \mu, (r - \mu)^2 \\
   r \leq \mu, | r - \mu |
 \end{dcases}
-
-
 $$
 
 With this formula, positive scores will be squared, so a negative 9 difference is equivalent to a positive 3 difference. This may seem extreme (and it is), but the score is arbitrary anyway and I think hating on popular show is boring so shut up.
