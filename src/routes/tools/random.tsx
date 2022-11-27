@@ -1,14 +1,7 @@
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  Match,
-  Show,
-  Switch,
-} from "solid-js";
+import { createSignal, Match, Show, Switch } from "solid-js";
 import server$ from "solid-start/server";
 import { fetchAndCalculateHotTake } from "~/server/calculations";
-import { randomUser } from "../api/hot-take";
+import { randomUser } from "../api/rank";
 
 export default function Index() {
   const [state, setState] = createSignal<"none" | "user" | "take">("none");
