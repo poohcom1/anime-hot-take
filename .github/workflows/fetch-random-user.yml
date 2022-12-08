@@ -2,7 +2,7 @@ name: Fetch Random User
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 * * * *'
+    - cron:  '0 */2 * * *'
 
     
 jobs:
@@ -22,7 +22,7 @@ jobs:
         id: request
         uses: fjogeleit/http-request-action@v1.12.0
         with:
-          url: 'https://anime-hot-take.vercel.app/api/hot-take?user=${{ fromJson(steps.randomUser.outputs.response).data.username }}'
+          url: 'https://anime-hot-take.vercel.app/api/rank?user=${{ fromJson(steps.randomUser.outputs.response).data.username }}'
           method: 'GET'
           timeout: 10000
           preventFailureOnNoResponse: 'true'
